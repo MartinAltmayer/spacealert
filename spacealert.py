@@ -246,12 +246,8 @@ class MissionGenerator:
             (1,1,2,1): 1
         }
         
-    # distribution of threat points (normal=1, serious=2) over phases 1 and 2 (no threats in phase 3)
-    THREAT_POINTS_DISTRIBUTION = {
-        (3,5): 2,
-        (4,4): 4,
-        (5,3): 2
-    }
+    MIN_TP_PER_PHASE = 3
+    MAX_TP_PER_PHASE = 5
     THREAT_PART = (0.55, 0.65)
     
     FIRST_THREAT_DISTRIBUTION = (
@@ -308,44 +304,34 @@ class MissionGenerator:
         threatTypes = []
         for i,tt in enumerate(THREAT_TYPES):
             threatTypes.extend([tt]*threatCounts[i])
-        random.shuffle(threatTypes)
-        
-        # Distribute threats to phases
-        if 'tpForPhase' not in self.state:
-            self.state['tpForPhase'] = draw(self.THREAT_POINTS_DISTRIBUTION)
-            print("Threat points: {}".format(self.state['tpForPhase']))
-        tPointsForPhase1, tPointsForPhase2 = self.state['tpForPhase']
-        ttForPhase1 = []
+
+        # Assign threats to phases
         iterations = 0
-        while sum(tt.points for tt in ttForPhase1) != tPointsForPhase1:
-            ttForPhase1, ttForPhase2 = [], []
+        while True:
+            random.shuffle(threatTypes)
+            ttForPhase = {1: [], 2: []}
+            p = random.randint(1,2)
             for tt in threatTypes:
-                (ttForPhase1 if random.random() > 0.5 else ttForPhase2).append(tt)
-                
+                ttForPhase[p].append(tt)
+                p = 1 if p==2 else 2
+            if all(self.MIN_TP_PER_PHASE <= sum(tt.points for tt in tts) <= self.MAX_TP_PER_PHASE for tts in ttForPhase.values()):
+                break # found a valid assignment
             iterations += 1
             if iterations >= 100:
-                raise RuntimeError("Cannot distribute threat types to phases")
-            
-        if len(ttForPhase1) == 0 or len(ttForPhase2) == 0:
-            raise InvalidMissionError("Phase without threat")
-        if len(ttForPhase1) > 4 or len(ttForPhase2) > 4:
-            raise InvalidMissionError("More than 4 threats in one phase")
+                raise RuntimeError("Cannot generate a mission")
             
         # Now choose times, turns and zones
-        #=============================================
         alerts = []
         lastZone = None
         ambush = {}
-        for phase, turns, ttForPhase \
-            in [(self.mission.phases[0], [1,2,3,4], ttForPhase1),
-                (self.mission.phases[1], [5,6,7,8], ttForPhase2)]:
+        for phase, turns in zip(self.mission.phases[:2], ([1,2,3,4],[5,6,7,8])):
             ambush[phase.number] = random.random() < self.AMBUSH_PROBABILITY
-            chosenTurns = sorted(random.sample(turns, len(ttForPhase)))
+            chosenTurns = sorted(random.sample(turns, len(ttForPhase[phase.number])))
             if ambush[phase.number]:
                 chosenTurns[-1] = turns[-1] # either 4 or 8
             # First threat time is more or less fixed
             chosenTimes = [phase.start + draw(self.FIRST_THREAT_DISTRIBUTION[phase.number-1])]
-            flexibleTimeCount = len(ttForPhase) - 1 - int(ambush[phase.number])
+            flexibleTimeCount = len(ttForPhase[phase.number]) - 1 - int(ambush[phase.number])
             earliestPossible = chosenTimes[0]+15
             latestPossible = phase.start + phase.length * self.THREAT_PART[phase.number-1]
             chosenTimes.extend(sorted([round5(earliestPossible + random.random() * (latestPossible-earliestPossible))
@@ -355,10 +341,10 @@ class MissionGenerator:
                 ambushTime += draw(self.AMBUSH_MOVE_DISTRIBUTION)
                 #print("Ambush in {} at {}".format(phase, ambushTime))
                 chosenTimes.append(ambushTime)
-            assert len(chosenTimes) == len(ttForPhase1 if phase.number == 1 else ttForPhase2)
+            assert len(chosenTimes) == len(ttForPhase[phase.number])
             shiftTimes(chosenTimes, 15, phase.end-25)
             
-            for time, turn, threatType in zip(chosenTimes, chosenTurns, ttForPhase):
+            for time, turn, threatType in zip(chosenTimes, chosenTurns, ttForPhase[phase.number]):
                 if threatType.internal:
                     zone = None
                 else:
