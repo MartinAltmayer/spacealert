@@ -1,4 +1,4 @@
-import argparse, collections, random, itertools, bisect
+import collections, random, itertools, bisect
   
 MAX_ITERATIONS = 10 
 
@@ -398,7 +398,7 @@ class MissionGenerator:
     MAX_COMMUNICATIONS_DOWN = (15, 25, 40)
     
     
-    def makeMission(self, fivePlayers=False, unconfirmed=False, verbose=False):
+    def makeMission(self, fivePlayers=False, unconfirmed=0, verbose=False):
         """Create and return a mission."""
         iterations = 1
         while True:
@@ -413,7 +413,7 @@ class MissionGenerator:
                             # This should never happen
                             if verbose:
                                 print(self.mission.log())
-                            raise RuntimeError("{} contains {}".format(e1,e2))
+                            raise RuntimeError("{} contains {}  Ambush: ({},{})".format(e1,e2, isinstance(e1, Alert) and e1.ambush, isinstance(e2, Alert) and e2.ambush))
                 break
             except InvalidMissionError as e:
                 if verbose:
@@ -431,8 +431,12 @@ class MissionGenerator:
             self.mission.addPhase(Phase(i, start, length))
             start += length
     
-    def makeThreats(self, fivePlayers=False, unconfirmed=False, verbose=False):
-        """Add alert events to the mission."""
+    def makeThreats(self, fivePlayers=False, unconfirmed=0, verbose=False):
+        """Add alert events to the mission.
+            - *fivePlayers* determines whether 7 (4 players) or 8 (5 players) threat points will be generated.
+            - *unconfirmed* is the number of threat points that will be marked as "unconfirmed".
+            - If *verbose* is True, some errors are printed to stdout.
+        """
         # First compute the number of threats of different types that will appear
         threatCounts = draw(self.THREAT_DISTRIBUTION_5P if fivePlayers else self.THREAT_DISTRIBUTION_4P)
         threatTypes = []
@@ -503,14 +507,14 @@ class MissionGenerator:
             times.extend(sorted([round5(earliestPossible + random.random() * (latestPossible-earliestPossible))
                                         for i in range(flexibleTimeCount)]))
             times = times[:len(tts)-int(ambush)]
+            shiftTimes(times, self.THREAT_DISTANCE, phase.end-60-self.THREAT_LENGTH) # don't collide with "Phase ends in one minute"
             if ambush:
                 ambushTime = round5(phase.start + phase.length * self.AMBUSH_PHASE_PART)
                 ambushTime += draw(self.AMBUSH_MOVE_DISTRIBUTION)
-                if ambushTime == phase.end - 60: # collides with "Phase ends in one minute"
-                    ambushTime += 5
+                if ambushTime <= phase.end-60 < ambushTime + self.THREAT_LENGTH: # collides with "Phase ends in one minute"
+                    ambushTime = phase.end-60 + 5 # directly behind "Phase ends in one minute"
                 #print("Ambush in {} at {}".format(phase, ambushTime))
                 times.append(ambushTime)
-            shiftTimes(times, self.THREAT_DISTANCE, phase.end-self.THREAT_DISTANCE)
             
             # Choose zones
             # Don't choose the same zone for two consecutive external threats
@@ -526,27 +530,25 @@ class MissionGenerator:
         
         self.mission.addEvents(alerts)
         
-        if unconfirmed:
-            # decide which alerts should be unconfirmed. Because there is a 4/5-player option, unconfirmed alerts are not necessary in their original meaning.
-            # Instead this option marks approximately one half of the alerts as "unconfirmed" (counting serious alerts twice). This can be used to get a mission
-            # of medium difficulty: draw yellow threats for "unconfirmed" alerts and white threats else.
+        # decide which alerts should be unconfirmed. Because there is a 4/5-player option, unconfirmed alerts are not necessary in their original meaning.
+        # Instead this option marks approximately one half of the alerts as "unconfirmed" (counting serious alerts twice). This can be used to get a mission
+        # of medium difficulty: draw yellow threats for "unconfirmed" alerts and white threats else.
+        
+        while unconfirmed > 0:
+            # Number of alerts with 1 or 2 threat points, respectively
+            c1, c2 = [len([alert for alert in alerts if not alert.unconfirmed and alert.type.points == c]) for c in [1,2]]
+            if c1 == 0 and (c2 == 0 or unconfirmed == 1):
+                break # no solution possible
             
-            def makeUnconfirmed(alerts):
-                # Make alerts worth 2 treath points unconfirmed
-                if len([alert for alert in alerts if alert.type.points == 1]) < 2:
-                    seriousAlerts = [alert for alert in alerts if alert.type.points == 2]
-                    if len(seriousAlerts) > 0:
-                        random.choice(seriousAlerts).unconfirmed = True
-                else:
-                    tp = 0
-                    while tp < 2:
-                        alert = random.choice(alerts)
-                        if not alert.unconfirmed and tp + alert.type.points <= 2:
-                            alert.unconfirmed = True
-                            tp += alert.type.points
-                
-            for phaseNumber in 1, 2:
-                makeUnconfirmed([alert for alert in alerts if alert.phase.number == phaseNumber])
+            dist = {}
+            for alert in alerts:
+                # skip alerts which cannot be part of a solution
+                if alert.unconfirmed or (unconfirmed % 2 == 0 and alert.type.points == 1 and c1 == 1) or (unconfirmed == 1 and alert.type.points == 2):
+                    continue
+                dist[alert] = alert.type.points
+            alert = draw(dist)
+            alert.unconfirmed = True
+            unconfirmed -= alert.type.points
                 
     def makeOtherEvents(self):         
         """Create all events which are neither phase events nor alerts."""
@@ -712,6 +714,8 @@ def makeStatistics(number, fivePlayers=False, unconfirmed=False, verbose=False):
 def drawEvents(events, length=None, width=80):
     """Draw a visual representation of *events* in one line of *width* characters on the terminal.
     *length* is the length of the mission. If it is not given, the endtime of the last event is used."""
+    if length is None:
+        length = events[-1].end
     blockString = ''
     for event in events:
         startPos = event.start * width // length
@@ -728,6 +732,7 @@ def drawEvents(events, length=None, width=80):
             
         
 if __name__ == "__main__":
+    import argparse
     parser = argparse.ArgumentParser(description="Generate missions for Vlaada Chvatil's Space Alert. In default mode this script will output a script for the Flash App at http://www.phipsisoftware.com/SpaceAlert.html")
     parser.add_argument("--stat", help="Generate many missions and print statistics.", action="store_true")
     parser.add_argument('-n', "--number", help="Number of missions to generate for the statistics.", type=int, default=1000)
@@ -736,7 +741,8 @@ if __name__ == "__main__":
     parser.add_argument('-w', "--width", help="Length of the timeline in characters.", type=int, default=80)
     parser.add_argument("--script", help="Print script", action="store_true")
     parser.add_argument('-a', "--all", help="Print log, draw timeline and print script.", action="store_true")
-    parser.add_argument("-u", "--unconfirmed", help="Special mode: Use unconfirmed reports for approximately half of the alerts (counting serious alerts twice). Use this to draw e.g. a white card for normal alerts and a yellow card for unconfirmed reports to get a mission of medium difficulty.", action="store_true")
+    # Concerning the special combination nargs+const+default:  '-u 3' -> 3; '-u'   -> 4 (const); ''     -> 0 (default)
+    parser.add_argument("-u", "--unconfirmed", help="Special mode: Use unconfirmed reports for approximately half of the alerts (counting serious alerts twice). Use this to draw e.g. a white card for normal alerts and a yellow card for unconfirmed reports to get a mission of medium difficulty.", nargs='?', const=4, default=0, type=int)
     parser.add_argument("-p", "--players", help="Number of players. Only 4 or 5 players are supported.", type=int, choices=[4,5])
     parser.add_argument('-v', '--verbose', action="store_true")
 
