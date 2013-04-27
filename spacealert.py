@@ -66,17 +66,27 @@ class Event:
         #return "{:02}:{:02}".format(self.minutes, self.seconds)
         return "{:02}:{:02}".format((self.start) // 60,(self.start) % 60)
         
-    def contains(self, timeOrEvent):
-        if isinstance(timeOrEvent, Event):
-            return self.contains(timeOrEvent.start) or self.contains(timeOrEvent.end)
-        return self.start <= timeOrEvent < self.end
+    def contains(self, time):
+        return self.start <= time < self.end
+    
+    def intersects(self, event):
+        if self.start < event.start:
+            return self.end > event.start
+        else:
+            return self.start < event.end
         
     @property
     def character(self):
         return type(self).__name__[0]
         
+    @property
+    def end(self):
+        # subclasses must either define 'duration' or provide a different implementation of 'end'
+        return self.start + self.duration
+        
         
 class Alert(Event):
+    duration = 15
     def __init__(self, start, turn, type, zone, unconfirmed=False, ambush=False):
         super().__init__(start)
         assert (zone is None) == type.internal
@@ -109,15 +119,12 @@ class Alert(Event):
         return self.type.points
         
     @property
-    def end(self):
-        return self.start + 15
-        
-    @property
     def character(self):
         return 'A' if not self.unconfirmed else 'U'
         
    
 class PhaseEvent(Event):
+    duration = 4
     def __init__(self, start, phase, remaining):
         super().__init__(start)
         self.phase = phase
@@ -134,12 +141,9 @@ class PhaseEvent(Event):
             return "{} - Phase {} ends in {} seconds".format(self.timeString, self.phase.number, self.remaining)
         else: return "{} - Phase {} ends".format(self.timeString, self.phase.number)
         
-    @property
-    def end(self):
-        return self.start + 4
-        
         
 class IncomingData(Event):
+    duration = 5
     def __repr__(self):
         return "{}ID".format(self.timeCode)
         
@@ -147,22 +151,15 @@ class IncomingData(Event):
     def message(self):
         return "{} - Incoming Data".format(self.timeString)
         
-    @property
-    def end(self):
-        return self.start + 5
-        
         
 class DataTransfer(Event):
+    duration = 12
     def __repr__(self):
         return "{}DT".format(self.timeCode)
      
     @property
     def message(self):
         return "{} - Data Transfer".format(self.timeString)
-        
-    @property
-    def end(self):
-        return self.start + 12
         
         
 class CommunicationsDown(Event):
@@ -176,10 +173,6 @@ class CommunicationsDown(Event):
     @property
     def message(self):
         return "{} - Communication System Down ({} seconds)".format(self.timeString, self.duration)
-        
-    @property
-    def end(self):
-        return self.start + self.duration
   
 
 class Phase:
@@ -263,6 +256,12 @@ class Mission:
                     result += event.points
         result += max(tpOnZone.values())
         return result
+        
+    def collides(self, event):
+        return event.start < 10 \
+                   or event.start in range(self.phases[1].start, self.phases[1].start+5) \
+                   or event.start in range(self.phases[1].start, self.phases[1].start+5) \
+                   or any(e.intersects(event) for e in self.events)
            
       
 class InvalidMissionError(ValueError):
@@ -409,11 +408,11 @@ class MissionGenerator:
                 self.makeOtherEvents()
                 for e1 in self.mission.events:
                     for e2 in self.mission.events:
-                        if e1 is not e2 and e1.contains(e2):
+                        if e1 is not e2 and e1.intersects(e2):
                             # This should never happen
                             if verbose:
                                 print(self.mission.log())
-                            raise RuntimeError("{} contains {}  Ambush: ({},{})".format(e1,e2, isinstance(e1, Alert) and e1.ambush, isinstance(e2, Alert) and e2.ambush))
+                            raise RuntimeError("{} intersects {}  Ambush: ({},{})".format(e1,e2, isinstance(e1, Alert) and e1.ambush, isinstance(e2, Alert) and e2.ambush))
                 break
             except InvalidMissionError as e:
                 if verbose:
@@ -613,14 +612,12 @@ class MissionGenerator:
         """Distribute the given other events (no alerts) in their phases."""
         p1, p2, p3 = self.mission.phases
         for phase in p1, p2, p3:
-            if phase != p3:
-                phaseLength = phase.length
-            else: phaseLength = phase.length-60
+            phaseLength = phase.length
             for event in events[phase]:
                 iterations = 0
-                while iterations < 10:
+                while iterations < MAX_ITERATIONS:
                     event.start = phase.start + round5(random.randint(0,phaseLength-11))
-                    if not any(e.contains(event) or event.contains(e) for e in self.mission.events):
+                    if not self.mission.collides(event):
                         self.mission.addEvent(event)
                         break
                     else: iterations += 1
@@ -745,8 +742,11 @@ if __name__ == "__main__":
     parser.add_argument("-u", "--unconfirmed", help="Special mode: Use unconfirmed reports for approximately half of the alerts (counting serious alerts twice). Use this to draw e.g. a white card for normal alerts and a yellow card for unconfirmed reports to get a mission of medium difficulty.", nargs='?', const=4, default=0, type=int)
     parser.add_argument("-p", "--players", help="Number of players. Only 4 or 5 players are supported.", type=int, choices=[4,5])
     parser.add_argument('-v', '--verbose', action="store_true")
+    parser.add_argument('--seed', help="Seed for the random number generator", type=int, default=None)
 
     args = parser.parse_args()
+    if args.seed is not None:
+        random.seed(args.seed)
     
     if args.stat:
         makeStatistics(args.number)
