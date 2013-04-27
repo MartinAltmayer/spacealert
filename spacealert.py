@@ -669,6 +669,8 @@ def makeStatistics(number, fivePlayers=False, unconfirmed=False, verbose=False):
     ambush = {1: 0, 2: 0}
     difficulties = []
     failed = 0
+    threatDistribution = generator.THREAT_DISTRIBUTION_5P if fivePlayers else generator.THREAT_DISTRIBUTION_4P
+    threatDist = {t: 0 for t in threatDistribution}
     for x in range(number):
         try:
             mission = generator.makeMission(fivePlayers, unconfirmed)
@@ -678,16 +680,23 @@ def makeStatistics(number, fivePlayers=False, unconfirmed=False, verbose=False):
                 print("Error: {}".format(e))
         else:
             iDict = {1: 1, 2: 1}
+            threats = {t: 0 for t in THREAT_TYPES}
             for event in mission.events:
                 if isinstance(event, Alert):
+                    threats[event.type] += 1
                     turnTimes[event.turn].append(event.time - event.phase.start)
                     i = iDict[event.phase.number]
                     ithTimes[event.phase.number][i].append(event.time - event.phase.start)
                     iDict[event.phase.number] += 1
                     if event.ambush:
                         ambush[event.phase.number] += 1
+            threatDist[tuple(threats[t] for t in THREAT_TYPES)] += 1 
             difficulties.append(mission.difficulty()) 
     
+    print("Threat distribution:")
+    s = sum(threatDistribution.values())
+    for t in sorted(threatDistribution.keys()):
+        print("{}: {:2d}   {:.2f}    {:2d}%    {:2d}%".format(t, threatDistribution[t], threatDist[t] / number * s, int(threatDistribution[t]/s*100), int(threatDist[t] / number * 100)))
     print("Failed: {}   ({:.2f}%)".format(failed, failed/number*100))
     print("----------------------")
     print("Threats in turns")
