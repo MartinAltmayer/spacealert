@@ -1,0 +1,4 @@
+#!/usr/bin/python3
+# Simple script for those who think that trajectories are awkward to shuffle by hand.
+import random
+print('Red: {}   White: {}   Blue: {}   Internal: {}'.format(*random.sample(range(1,8), 4)))

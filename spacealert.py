@@ -1,9 +1,123 @@
-import collections, random, itertools, bisect
-  
-MAX_ITERATIONS = 10 
+# -*- coding: utf-8 -*-
+# Space alert mission generator
+# Copyright (C) 2013-2014 Martin Altmayer
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+import random, itertools, bisect
 
+MAX_ITERATIONS = 100
 
+class Options:
+    """This class stores options that are read during mission generation. Instead of creating Options-instances via the constructor you probably want to use one of the create-methods."""
+    # Phase lengths
+    #===============
+    length = 600 # Length of mission in seconds
+    doubleActions = False # Whether double actions are used. Currently this only affects the distribution
+                          # of length to the three phases.
+    
+    # Threat number and types
+    #========================
+    threatPoints = 7       # Total number of threat points (normal threat = 1; serious threat = 2).
+    minCount = 4           # Minimal number of threats.
+    maxCount = 6           # Maximal number of threats.
+    minTpInternal = 1      # Minimal number of internal threat points.
+    maxTpInternal = 3      # Maximal number of internal threat points.
+    minCountInternal = 1   # Minimal number of internal threats.
+    maxCountInternal = 2   # Maximal number of internal threats.
+    pInternal = 0.43       # Probability specifying the binomial distribution for the amount of internal
+                           # threat points.
+    pSerious = 0.5         # Probability specifying the binomial distribution for the total number of
+                           # serious threats (both extern and internal).
+    pSeriousInternal = 0.5 # Probability specifying the binomial distribution for the number of internal
+                           # serious threats within the total number of serious threats. Note: 0.5 does
+                           # not mean that external and internal threats are equally likely, because
+                           # maxTpInternal/maxCountInternal restrict the number of internal threats.
+    
+    # Assigning threats to turns
+    #===========================
+    minTpPerPhase = 3
+    maxTpPerPhase = 5
+    earliestInternal = 2
+    latestInternal = 7
+    earliestSeriousInternal = 3
+    latestSeriousInternal = 6
+    allowConsecutiveInternalThreats = False
+    allowSimultaneousThreats = False
+    maxInternalThreatsPerPhase = 1
+    maxTpPerTurn = 3 # only if allowSimultaneousThreats is True
+    
+    # Threat times
+    #=============
+    threatLength = 10
+    threatDistance = 25
+    fixedAlerts = (1, 1) # number of alerts in phase 1, resp. 2, that will come as early as possible (so that the players have something to do).
+    surplusTimes = 0 # The algorithm will generate this number of times too much and remove the biggest times.
+                     # Thus a high number of surplus times shifts the distribution of all times to lower values.
+    ambushProbabilities = (0.25, 0.25) # probability of an ambush in phase 1, resp. 2
+    
+    
+    def __init__(self, **args):
+        self.__dict__.update(args)
+        
+    def update(self, **args):
+        self.__dict__.update(args)
+        
+    @staticmethod
+    def create(playerNumber, **args):
+        """Create a mission for the given number of players using normal actions. Keyword-arguments may be used to overwrite arbitrary options."""
+        if playerNumber == 4:
+            options = Options() # default arguments are for 4 players
+        elif playerNumber == 5:
+            options = Options(threatPoints=8, minCount=5, maxCount=7)
+        else: raise ValueError("Number of players must be between 4 and 5.")
+        options.update(**args)
+        return options
+    
+    @staticmethod
+    def createDoubleActions(playerNumber, **args):
+        """Create a mission for the given number of players using double actions. Keyword-arguments may be used to overwrite arbitrary options."""
+        options = Options.create(playerNumber)
+        options.length = 810
+        if playerNumber == 4:
+            options.threatPoints = 10
+            options.minCount = 6
+            options.maxCount = 8
+            options.minTpInternal = 3
+            options.maxTpInternal = 4
+            options.minCountInternal = 2
+            options.maxCountInternal = 3
+        else:
+            options.threatPoints = 12
+            options.minCount = 7
+            options.maxCount = 10
+            options.minTpInternal = 2
+            options.maxTpInternal = 5
+            options.minCountInternal = 2
+            options.maxCountInternal = 3
+        options.fixedAlerts = (2, 1)
+        options.minTpPerPhase = 4
+        options.maxTpPerPhase = 8
+        options.doubleActions = True
+        options.allowSimultaneousThreats = True
+        options.maxInternalThreatsPerPhase = 2
+        options.update(**args)
+        return options
+
+     
 class Zone:
+    """One of the three zones of the ship."""
     def __init__(self, name, code):
         self.name = name
         self.code = code
@@ -15,6 +129,7 @@ ZONES = (Zone('Red', 'R'), Zone('White', 'W'), Zone('Blue', 'B'))
 
 
 class ThreatType:
+    """A threat type is the combination of the properties external/internal and normal/serious of a threat."""
     def __init__(self, name, code):
         self.name = name
         self.code = code
@@ -33,15 +148,17 @@ class ThreatType:
     @property
     def points(self):
         return 2 if self.serious else 1
-
-T_NORMAL = ThreatType('Threat', 'T')
+        
+        
+T_EXTERNAL = ThreatType('Threat', 'T')
 T_INTERNAL = ThreatType('Internal Threat', 'IT')
-T_SERIOUS = ThreatType('Serious Threat', 'ST')
+T_SERIOUS_EXTERNAL = ThreatType('Serious Threat', 'ST')
 T_SERIOUS_INTERNAL = ThreatType('Serious Internal Threat', 'SIT')
-THREAT_TYPES = [T_NORMAL, T_INTERNAL, T_SERIOUS, T_SERIOUS_INTERNAL]
+THREAT_TYPES = [T_EXTERNAL, T_INTERNAL, T_SERIOUS_EXTERNAL, T_SERIOUS_INTERNAL]
 
 
 class Event:
+    """Abstract superclass for all events (threats, incoming data, etc.)."""
     def __init__(self, start):
         self.start = start
         
@@ -86,10 +203,10 @@ class Event:
         
         
 class Alert(Event):
+    """The most important event: An attacking enemy."""
     duration = 15
-    def __init__(self, start, turn, type, zone, unconfirmed=False, ambush=False):
+    def __init__(self, start=None, turn=None, type=None, zone=None, unconfirmed=False, ambush=False):
         super().__init__(start)
-        assert (zone is None) == type.internal
         self.turn = turn
         self.type = type
         self.zone = zone
@@ -97,13 +214,18 @@ class Alert(Event):
         self.ambush = ambush
         
     def __repr__(self):
-        return "{}{}{}{}{}".format(self.timeCode, 'AL' if not self.unconfirmed else 'UR', self.turn, self.type.code, self.zone.code if self.zone is not None else '')
+        return "{}{}{}{}{}".format(self.timeCode,
+                                   'AL' if not self.unconfirmed else 'UR',
+                                   self.turn,
+                                   self.type.code,
+                                   self.zone.code if self.zone is not None else '')
     
     @property
     def message(self):
         unconfirmed = "Unconfirmed " if self.unconfirmed else ''
         if self.zone is not None:
-            return "{} - Time T+{} {}{} Zone {}".format(self.timeString, self.turn, unconfirmed, self.type, self.zone)
+            return "{} - Time T+{} {}{} Zone {}" \
+                   .format(self.timeString, self.turn, unconfirmed, self.type, self.zone)
         else: return "{} - Time T+{} {}{}".format(self.timeString, self.turn, unconfirmed, self.type)
     
     @property
@@ -124,6 +246,7 @@ class Alert(Event):
         
    
 class PhaseEvent(Event):
+    """PhaseEvents announce the end of a certain phase, e.g. "Phase 2 ends in 20 seconds.". *remaining* is the remaining time in seconds."""
     duration = 4
     def __init__(self, start, phase, remaining):
         super().__init__(start)
@@ -138,7 +261,8 @@ class PhaseEvent(Event):
     @property
     def message(self):        
         if self.remaining is not None:
-            return "{} - Phase {} ends in {} seconds".format(self.timeString, self.phase.number, self.remaining)
+            return "{} - Phase {} ends in {} seconds" \
+                   .format(self.timeString, self.phase.number, self.remaining)
         else: return "{} - Phase {} ends".format(self.timeString, self.phase.number)
         
         
@@ -176,6 +300,7 @@ class CommunicationsDown(Event):
   
 
 class Phase:
+    """One of the three phases of the mission. *number* should be in [1,2,3]."""
     def __init__(self, number, start, length):
         self.number = number
         self.start = start
@@ -192,13 +317,18 @@ class Phase:
         return PhaseEvent(self.end, self, None)
         
     def getEvents(self):
-        return [PhaseEvent(self.end-r, self, r) for r in (60,20,5)]    + [self.getFinalEvent()]
+        """Return a list of all events that are necessary to announce the end of this phase properly."""
+        return [PhaseEvent(self.end-r, self, r) for r in (60,20,5)] + [self.getFinalEvent()]
         
     def __int__(self):
         return self.number-1
 
-        
+       
+class InvalidMissionError(Exception):
+    pass
+
 class Mission:
+    """A missions of SpaceAlert. This is mainly an ordered list of events, grouped into three phases."""
     def __init__(self):
         self.phases = []
         self.events = []
@@ -227,9 +357,6 @@ class Mission:
     def addEvents(self, events):
         for event in events:
             self.addEvent(event)
-            
-    def script(self):
-        return ",".join(str(event) for event in self.events)
         
     @property
     def length(self):
@@ -239,10 +366,25 @@ class Mission:
         return "\n".join(event.message for event in self.events)
         
     def script(self, all=False):
+        """Return a script of this mission that can be used for the Flash app at http://www.phipsisoftware.com/SpaceAlert.html."""
         return ','.join(str(event) for event in self.events
                         if all or not isinstance(event, PhaseEvent) or event.remaining is None)
+          
+    def alertCounters(self):
+        lines = []
+        alerts = [event for event in self.events if isinstance(event, Alert)]
+        t = (sum(1 for a in alerts if a.type == type and not a.unconfirmed) for type in THREAT_TYPES)
+        lines.append("Threats {} T {} IT {} ST {} SIT".format(*t))
+        if any(alert.unconfirmed for alert in alerts):
+            t = (sum(1 for a in alerts if a.type == type and a.unconfirmed) for type in THREAT_TYPES)
+            lines.append("Unconf. {} T {} IT {} ST {} SIT".format(*t))
+        ambushCount = sum(1 for a in alerts if a.ambush)
+        if ambushCount > 0:
+            lines.append("{} Ambushes".format(ambushCount) if ambushCount > 1 else "1 Ambush")
+        return "\n".join(lines)
         
     def difficulty(self):
+        """Experimental: Try to compute a difficulty value for this mission."""
         result = 0
         tpOnZone = {z: 0 for z in ZONES}
         for event in self.events:
@@ -258,124 +400,15 @@ class Mission:
         return result
         
     def collides(self, event):
+        """Return whether the given event overlaps with any event of the mission."""
         return event.start < 10 \
                    or event.start in range(self.phases[1].start, self.phases[1].start+5) \
                    or event.start in range(self.phases[1].start, self.phases[1].start+5) \
                    or any(e.intersects(event) for e in self.events)
            
-      
-class InvalidMissionError(ValueError):
-    pass
-
-    
+       
 class MissionGenerator:
-    # The following distribution dicts map values to their probability weight.
-    # Thus e.g. the probability that phase 1 lasts exactly 200 seconds is
-    #    PHASE1_DISTRIBUTION[200] / sum(PHASE1_DISTRIBUTION.values())
-    # Many distributions are tailored to match the distributions given by the 8 standard missions.
-    
-    # Length of phases in seconds
-    PHASE1_DISTRIBUTION = {
-            200:     1,
-            205:     3,
-            210:     3,
-            215:     3,
-            220:     5,
-            225:     10,
-            230:     5,
-            235:     2
-        }
-    PHASE2_DISTRIBUTION = {
-            210:  1,
-            215:  2,
-            220:  4,
-            225:  4,
-            230:  4,
-            235:  4,
-            240:  4,
-            245:  2,
-        }
-    PHASE3_DISTRIBUTION = {
-            135: 1,
-            140: 2,
-            145: 2,
-            150: 9,
-            155: 4,
-            160: 2,
-        }
-        
-    # number of (normal, internal, serious, serious internal)
-    THREAT_DISTRIBUTION_5P = {
-            (6,0,0,1): 1,
-            (5,1,1,0): 1,
-            (5,1,0,1): 2,
-            (4,2,1,0): 2,
-            (4,0,1,1): 5, 
-            (3,1,2,0): 5,
-            (3,1,1,1): 2, 
-            (2,2,2,0): 3,
-            (2,0,2,1): 3,
-            (1,1,3,0): 1,
-            (1,1,2,1): 1,
-            (0,2,3,0): 1,
-        }
-        
-    # number of (normal, internal, serious, serious internal)
-    THREAT_DISTRIBUTION_4P = {
-            (5,0,0,1): 1,
-            (4,1,1,0): 4,
-            (4,1,0,1): 1,
-            (3,2,1,0): 2,
-            (3,2,0,1): 1,
-            (3,0,1,1): 8,
-            (2,1,2,0): 6,
-            (1,2,2,0): 5,
-            (1,0,2,1): 1,
-        }
-      
-    # Min/max threat points per phase (normal=1, serious=2)
-    MIN_TP_PER_PHASE = 3
-    MAX_TP_PER_PHASE = 5
-    
-    # Distribution of the time of the first threat in a phase
-    FIRST_THREAT_DISTRIBUTION = {
-        1: {10: 1},
-        2: {
-            5:  2,
-            10: 3,
-            15: 3,
-            20: 2
-        }
-    }
-    
-    # Restrict some threat types to specific turns
-    RESTRICT_TURNS = {
-        T_INTERNAL: range(2,8),
-        T_SERIOUS_INTERNAL: range(3,7)
-    }
-    
-    # Probability that an ambush happens in a phase (an ambush is a late-coming threat)
-    # Remember that there are two phases in which an ambush may happen.
-    # Real ambush probability is thus 1-(1-x)^2
-    AMBUSH_PROBABILITY = (0.25, 0.25)#{1: 0.25, 2: 0.25}
-    # Ambushs appear basically at phase.start + phase.length*AMBUSH_PHASE_PART
-    # To make this more random they are shifted by an amount drawn from AMBUSH_MOVE_DISTRIBUTION
-    AMBUSH_PHASE_PART = 0.77 # Must be small enough so that ambushs do not collide with the phase end
-    AMBUSH_MOVE_DISTRIBUTION = {
-        -5:  2,
-        0:   5,
-        5:   3,
-        10:  1 
-    }
-    
-    # To shift the distribution of times to the beginning of the phase, this number of additional times is drawn
-    # in a phase. Then the smallest times are taken. Thus the times are basically drawn from a beta distribution.
-    SURPLUS_TIMES = {1:2, 2:0}
-    
-    # Minimal distance of threats to each other and to the phase end in seconds.
-    # Must be bigger than the time necessary to announce a threat
-    THREAT_DISTANCE = 25
-    THREAT_LENGTH = 15
+    """A MissionGenerator is Initialized with a set of options (either as object or as keyword-arguments) and can be used to generate one or more missions."""
     
     # Number of (incoming data, data transfer)
     DATA_DISTRIBUTION = {
@@ -396,148 +429,237 @@ class MissionGenerator:
     # Maximum number of communications down in the three phases
     MAX_COMMUNICATIONS_DOWN = (15, 25, 40)
     
-    
-    def makeMission(self, fivePlayers=False, unconfirmed=0, verbose=False):
-        """Create and return a mission."""
-        iterations = 1
-        while True:
-            try:
-                self.mission = Mission()
-                self.makePhases()
-                self.makeThreats(fivePlayers, unconfirmed, verbose)
-                self.makeOtherEvents()
-                for e1 in self.mission.events:
-                    for e2 in self.mission.events:
-                        if e1 is not e2 and e1.intersects(e2):
-                            # This should never happen
-                            if verbose:
-                                print(self.mission.log())
-                            raise RuntimeError("{} intersects {}  Ambush: ({},{})".format(e1,e2, isinstance(e1, Alert) and e1.ambush, isinstance(e2, Alert) and e2.ambush))
-                break
-            except InvalidMissionError as e:
-                if verbose:
-                    print("Invalid ({}): {}".format(iterations, e))
-                if iterations >= MAX_ITERATIONS:
-                    raise RuntimeError("Could not generate a mission in {} tries.".format(MAX_ITERATIONS))
-                iterations += 1
-        return self.mission 
-    
-    def makePhases(self):
-        """Create the mission's phases."""
-        start = 0
-        for i,dist in (1,self.PHASE1_DISTRIBUTION), (2,self.PHASE2_DISTRIBUTION), (3,self.PHASE3_DISTRIBUTION):
-            length = draw(dist)
-            self.mission.addPhase(Phase(i, start, length))
-            start += length
-    
-    def makeThreats(self, fivePlayers=False, unconfirmed=0, verbose=False):
-        """Add alert events to the mission.
-            - *fivePlayers* determines whether 7 (4 players) or 8 (5 players) threat points will be generated.
-            - *unconfirmed* is the number of threat points that will be marked as "unconfirmed".
-            - If *verbose* is True, some errors are printed to stdout.
-        """
-        # First compute the number of threats of different types that will appear
-        threatCounts = draw(self.THREAT_DISTRIBUTION_5P if fivePlayers else self.THREAT_DISTRIBUTION_4P)
-        threatTypes = []
-        for i,tt in enumerate(THREAT_TYPES):
-            threatTypes.extend([tt]*threatCounts[i])
-
-        # Assign threats to phases
-        # Make sure that threat points for each phase are between MIN_TP_PER_PHASE AND MAX_TP_PER_PHASE.
-        # Make sure that a serious internal threat and a (normal) internal threat don't happen in the same phase.
-        iterations = 0
-        while True:
-            random.shuffle(threatTypes)
-            ttForPhase = {1: [], 2: []}
-            p = random.randint(1,2)
-            for tt in threatTypes:
-                ttForPhase[p].append(tt)
-                p = 1 if p==2 else 2
-            valid = True
-            if any(not (self.MIN_TP_PER_PHASE <= sum(tt.points for tt in tts) <= self.MAX_TP_PER_PHASE) for tts in ttForPhase.values()):
-                valid = False
-            elif any(T_INTERNAL in tts and T_SERIOUS_INTERNAL in tts for tts in ttForPhase.values()):
-                valid = False
-            if valid:
-                break
-            iterations += 1
-            if iterations >= MAX_ITERATIONS:
-                raise InvalidMissionError("Cannot assign threats to phases")
-
-        alerts = []
-        lastZone = None
-        ambush = {}
-        for phase, possibleTurns in zip(self.mission.phases[:2], ([1,2,3,4],[5,6,7,8])):
-            tts = ttForPhase[phase.number]
-            
-            # Now choose turns, times and zones
-            # Make sure that
-            # - threat types with restricted turn ranges appear only in that turns (see RESTRICT_TURNS)
-            # - internal threats are not consecutive
-            iterations = 0
-            while True:
-                ambush = random.random() < self.AMBUSH_PROBABILITY[int(phase)]
-                turns = sorted(random.sample(possibleTurns, len(tts)))
-                if ambush: # Make sure last threat is in last possible turn (either 4 or 8)
-                    turns[-1] = possibleTurns[-1]
-                random.shuffle(tts)
-                valid = True
-                if any(tt in self.RESTRICT_TURNS and turn not in self.RESTRICT_TURNS[tt] for tt,turn in zip(tts,turns)):
-                    valid = False
-                elif any(tts[i].internal and tts[i-1].internal for i in range(1,len(tts))):
-                    valid = False # Two successive internal threats 
-                elif ambush and phase.number == 1 and len(tts) == 2:
-                    valid = False # Do not make ambushs in phase 1 when there is only 1 threat before (=> little to do for 2 minutes)
-                if valid:
-                    break
-                iterations += 1
-                if iterations >= MAX_ITERATIONS:
-                    if verbose:
-                        print("Threat counts: {}".format(threatCounts))
-                        print("Ambush: {}".format(ambush))
-                        print("Threat-types: {}".format(tts))
-                    raise InvalidMissionError("Cannot find a valid turn assignment for {}".format(phase))
-                    
-            # First threat time is more or less fixed
-            times = [phase.start + draw(self.FIRST_THREAT_DISTRIBUTION[phase.number])]
-            flexibleTimeCount = len(tts) - 1 - int(ambush) + self.SURPLUS_TIMES[phase.number]
-            earliestPossible = times[0]+self.THREAT_LENGTH
-            latestPossible = phase.end - 60 - self.THREAT_LENGTH
-            times.extend(sorted([round5(earliestPossible + random.random() * (latestPossible-earliestPossible))
-                                        for i in range(flexibleTimeCount)]))
-            times = times[:len(tts)-int(ambush)]
-            shiftTimes(times, self.THREAT_DISTANCE, phase.end-60-self.THREAT_LENGTH) # don't collide with "Phase ends in one minute"
-            if ambush:
-                ambushTime = round5(phase.start + phase.length * self.AMBUSH_PHASE_PART)
-                ambushTime += draw(self.AMBUSH_MOVE_DISTRIBUTION)
-                if ambushTime <= phase.end-60 < ambushTime + self.THREAT_LENGTH: # collides with "Phase ends in one minute"
-                    ambushTime = phase.end-60 + 5 # directly behind "Phase ends in one minute"
-                #print("Ambush in {} at {}".format(phase, ambushTime))
-                times.append(ambushTime)
-            
-            # Choose zones
-            # Don't choose the same zone for two consecutive external threats
-            for time, turn, threatType in zip(times, turns, tts):
-                if threatType.internal:
-                    zone = None
-                else:
-                    zone = random.choice([zone for zone in ZONES if zone != lastZone])
-                    lastZone = zone
-                alerts.append(Alert(time, turn, threatType, zone))
-            if ambush:
-                alerts[-1].ambush = True
+    def __init__(self, options=None, **args):
+        self.mission = None
+        if options is not None:
+            self.options = options
+        else: self.options = Options(**args)
         
+    def __getattr__(self, attr):
+        if hasattr(self.options, attr):
+            return getattr(self.options, attr)
+        else: raise AttributeError("MissionGenerator has no attribute '{}'.".format(attr))
+   
+    def makeMission(self):
+        self.mission = Mission()
+        self.makePhases()
+        self.makeThreats()
+        if not self.solo:
+            self.makeOtherEvents()
+        return self.mission
+        
+    def makePhases(self):
+        lengths = self.choosePhaseLengths()
+        self.mission.addPhase(Phase(1, 0, lengths[0]))
+        self.mission.addPhase(Phase(2, lengths[0], lengths[1]))
+        self.mission.addPhase(Phase(3, lengths[0]+lengths[1], lengths[2]))
+        
+    def choosePhaseLengths(self):
+        iterations = 0
+        # For some reasons the relative lengths of the standard missions are different with double actions.
+        if not self.doubleActions:
+            relativeLengths = (0.37, 0.38, 0.25)
+            deviations = ((0.85, 1.15), (0.85, 1.15), (0.9, 1.1))
+        else:
+            relativeLengths = (0.37, 0.33, 0.3)
+            deviations = ((0.9, 1.1), (0.85, 1.15), (0.85, 1.15))
+        
+        result = [0, 0, 0]
+        for i in range(3):
+            # Note: Basically we need a binomial distribution with step size 5.
+            # Thus we divide by 5 at the begining and multiply by 5 again at the end.
+            mean = relativeLengths[i] * self.length / 5
+            min = int(mean * deviations[i][0])
+            max = int(mean * deviations[i][1])
+            result[i] = 5 * binomial(min, max, m=mean)
+            
+        return result
+        
+    def makeThreats(self):
+        tt = self.chooseThreatTuple()
+        alerts = self.assignThreatsToTurns(tt)
+        if self.mission is not None: # may be None when testing threat-related functions without generating missions and phases
+            for alert in alerts:
+                alert.phase = self.mission.phases[0] if alert.turn <= 4 else self.mission.phases[1]
+        self.chooseThreatTimes(alerts, self.mission.phases)
+        self.chooseThreatZones(alerts)
+        self.chooseUnconfirmed(alerts)
         self.mission.addEvents(alerts)
         
+    def chooseThreatTuple(self):
+        # Initialize with zero threats and check whether all parameters are valid
+        tt = ThreatTuple(self.options)
+        
+        # First split the threat points into external / internal
+        if not (tt.threatPoints % 2 == 0 and tt.threatPoints // 2 == tt.maxCount):
+            tt.tpInternal = binomial(tt.minTpInternal, tt.maxTpInternal, self.pInternal)
+        else:
+            # In this special case we must only use serious threats. The line above could generate an odd
+            # number for tpInternal making it impossible to satisfy the maxCount constraint
+            # Thus we restrict the binomial distribution to even numbers.
+            tt.tpInternal = 2*binomial(tt.minTpInternal//2, tt.maxTpInternal//2, self.pInternal)
+        tt.tpExternal = tt.threatPoints - tt.tpInternal
+        
+        # Note: At this point it is guaranteed that the following calls to binomial cannot fail and will
+        # always return valid solutions.
+        
+        # First check whether the various 'internal' constraints enforce at least some normal or serious
+        # internal threats.
+        if tt.tpInternal > tt.maxCountInternal:
+            tt.add(T_SERIOUS_INTERNAL, tt.tpInternal - tt.maxCountInternal)
+        if tt.tpInternal < 2 * tt.minCountInternal:
+            tt.add(T_INTERNAL, 2 * tt.minCountInternal - tt.tpInternal)
+            
+        # If tpExtern is odd, we must have a normal threat. Analogous for tpInternal.
+        if tt.tpExternal % 2 == 1:
+            tt.add(T_EXTERNAL)
+        if tt.tpInternal % 2 == 1:
+            tt.add(T_INTERNAL)
+        
+        # Now choose number of serious (external and internal) threats.
+        serious = binomial(max(0, tt.threatPoints-tt.maxCount),
+                           min(tt.threatPoints // 2, tt.threatPoints-tt.minCount),
+                           self.pSerious)
+        
+        # Split serious threat into external / internal
+        seriousInternal = binomial(max(0, serious - tt.tpExternal//2),
+                                   min(tt.tpInternal//2, serious),
+                                   self.pSeriousInternal)
+        tt.add(T_SERIOUS_INTERNAL, seriousInternal)
+        tt.add(T_SERIOUS_EXTERNAL, serious - seriousInternal)
+        
+        # And add remaining threats as normal threats
+        tt.add(T_EXTERNAL, tt.tpExternal)
+        tt.add(T_INTERNAL, tt.tpInternal)
+        #tt.check()
+        return tt
+        
+    def assignThreatsToTurns(self, threatTuple):
+        alerts = [Alert(type=tt) for tt in THREAT_TYPES for i in range(threatTuple[tt])]
+        
+        def keyFunction(alert):
+            if alert.type == T_SERIOUS_INTERNAL:
+                return 1
+            elif alert.type == T_INTERNAL:
+                return 2
+            else: return 3
+        alerts.sort(key=keyFunction)
+            
+        def tryAssign(alert):
+            if alert.type == T_SERIOUS_INTERNAL:
+                possibleRange = range(self.earliestSeriousInternal, self.latestSeriousInternal+1)
+            elif alert.type == T_INTERNAL:
+                possibleRange = range(self.earliestInternal, self.latestInternal+1)
+            else: possibleRange = range(1, 9)
+            for turn in (internalTurns if alert.internal else externalTurns):
+                if turn in possibleRange:
+                    alert.turn = turn
+                    if not alert.internal:
+                        externalTurns.remove(turn)
+                        if not self.allowSimultaneousThreats and turn in internalTurns:
+                            internalTurns.remove(turn)
+                    if alert.internal:
+                        internalTurns.remove(turn)
+                        if not self.allowConsecutiveInternalThreats:
+                            if turn-1 in internalTurns:
+                                internalTurns.remove(turn-1)
+                            if turn+1 in internalTurns:
+                                internalTurns.remove(turn+1)
+                        if not self.allowSimultaneousThreats and turn in externalTurns:
+                            externalTurns.remove(turn)
+                    return True
+            return False
+                    
+        iterations = 0
+        while True:
+            externalTurns = list(range(1, 9))
+            internalTurns = list(range(1, 9))
+            random.shuffle(externalTurns)
+            random.shuffle(internalTurns)
+            success = all(tryAssign(alert) for alert in alerts)
+            
+            if (success
+                and self.minTpPerPhase <= sum(a.type.points for a in alerts if a.turn <= 4) <= self.maxTpPerPhase 
+                and self.minTpPerPhase <= sum(a.type.points for a in alerts if a.turn > 4) <= self.maxTpPerPhase
+                and sum(1 for a in alerts if a.internal and a.turn <= 4) <= self.maxInternalThreatsPerPhase
+                and sum(1 for a in alerts if a.internal and a.turn > 4) <= self.maxInternalThreatsPerPhase
+                and (not self.allowSimultaneousThreats or
+                            all(sum(a.type.points for a in alerts if a.turn == t)
+                                <= self.maxTpPerTurn for t in range(1,9)))):
+                    alerts.sort(key=lambda a: a.turn)
+                    return alerts
+            else:
+                iterations += 1
+                if iterations >= MAX_ITERATIONS:
+                    print("Threats:", threatTuple)
+                    raise InvalidMissionError("Cannot assign threats to turns")
+    
+    def chooseThreatTimes(self, alerts, phases):
+        for phase in phases[:2]:
+            phaseAlerts = [a for a in alerts if a.phase == phase]
+            if len(phaseAlerts) == 0:
+                continue
+            ambush = len(phaseAlerts) >= 3 and random.random() < self.ambushProbabilities[phase.number-1]
+            timeCount = len(phaseAlerts) - int(ambush) + self.surplusTimes - self.fixedAlerts[phase.number-1]
+            earliestPossible = phase.start + 10 
+            latestPossible = phase.end - 60 - self.threatLength
+            if earliestPossible >= latestPossible:
+                raise InvalidMissionError("Cannot place threats in phase {} (time: {}-{})".format(phase.number, phase.start, phase.end))
+            times = [earliestPossible] * self.fixedAlerts[phase.number-1]
+            times.extend(round5(earliestPossible + random.random() * (latestPossible-earliestPossible)) for i in range(timeCount))
+            times.sort()
+            del times[len(phaseAlerts) - int(ambush):] # remove surplus times
+            
+            threatRanges = {
+                    1: 0.,
+                    2: 0.3,
+                    3: 0.8,
+                    4: 1.,
+                    5: 0.3,
+                    6: 0.6,
+                    7: 0.9,
+                    8: 1.
+            }
+                    
+            for i in range(len(times)):
+                times[i] = min(times[i], round5(earliestPossible + int(threatRanges[phaseAlerts[i].turn]*(latestPossible-earliestPossible))))
+            shiftTimes(times, self.threatDistance, phase.end-60-self.threatLength) # don't collide with "Phase ends in one minute"
+            if ambush:
+                # choose time of ambush
+                times.append(phase.end-50 + draw({0: 2, 5: 2, 10: 1}))
+                alert.ambush = True
+            for alert, time in zip(phaseAlerts, times):
+                alert.start = time
+                
+    def chooseThreatZones(self, alerts):
+        lastZone = None
+        for alert in alerts:
+            if not alert.internal:
+                alert.zone = random.choice([z for z in ZONES if z != lastZone])
+                lastZone = alert.zone
+
+    def chooseUnconfirmed(self, alerts):
         # decide which alerts should be unconfirmed. Because there is a 4/5-player option, unconfirmed alerts are not necessary in their original meaning.
         # Instead this option marks approximately one half of the alerts as "unconfirmed" (counting serious alerts twice). This can be used to get a mission
         # of medium difficulty: draw yellow threats for "unconfirmed" alerts and white threats else.
-        
+        if self.unconfirmed >= 0:
+            unconfirmed = min(self.unconfirmed, self.threatPoints)
+        else:
+            # unconfirmed should be approximately 1/2*threatPoints
+            if self.threatPoints % 2 == 0:
+                unconfirmed = self.threatPoints // 2
+            elif any(not alert.serious for alert in alerts):
+                unconfirmed = self.threatPoints // 2 + random.randint(0, 1)
+            else:
+                # special case, unconfirmed must be even
+                if self.threatPoints % 4 == 1:
+                    unconfirmed = self.threatPoints // 2
+                else: # threatPoints % 4 == 3
+                    unconfirmed = self.threatPoints // 2 + 1
+                    
         while unconfirmed > 0:
             # Number of alerts with 1 or 2 threat points, respectively
             c1, c2 = [len([alert for alert in alerts if not alert.unconfirmed and alert.type.points == c]) for c in [1,2]]
-            if c1 == 0 and (c2 == 0 or unconfirmed == 1):
-                break # no solution possible
             
             dist = {}
             for alert in alerts:
@@ -548,7 +670,7 @@ class MissionGenerator:
             alert = draw(dist)
             alert.unconfirmed = True
             unconfirmed -= alert.type.points
-                
+            
     def makeOtherEvents(self):         
         """Create all events which are neither phase events nor alerts."""
         p1, p2, p3 = self.mission.phases
@@ -607,7 +729,7 @@ class MissionGenerator:
             else: nextEventPhase = p2
             
         self.distributeEvents(events)
-        
+
     def distributeEvents(self, events):
         """Distribute the given other events (no alerts) in their phases."""
         p1, p2, p3 = self.mission.phases
@@ -623,7 +745,27 @@ class MissionGenerator:
                     else: iterations += 1
                 else: raise InvalidMissionError("Cannot distribute special event {}".format(event))
     
-            
+
+def binomial(min, max, p=None, m=None):
+    """Return a sample from a binomial distribution between min and max (including both values). The
+    higher *p* is the more probable are values near *max*. Alternatively you can specify the mean *m*.
+    In this case *p* will be calculated such that *m* is the distribution's mean.
+    """
+    if max < min:
+         raise ValueError("Binomial: max must be greater or equal min. Max: {}, min: {}".format(max, min))
+    if p is None:
+        if m is None:
+            raise ValueError("Binomial: either p or m must not be None.")
+        if not (min <= m <= max):
+            raise ValueError("Binomial: mean m must be between min and max.")
+        p = (m-min) / (max-min) # => m is the expectation
+    result = min
+    for i in range(max-min):
+        if random.random() < p:
+            result += 1
+    return result
+    
+
 def draw(dist):
     """Choose a sample according to *dist* (mapping values to their probability weights). E.g.
         draw({'a': 2, 'b': 1})
@@ -637,11 +779,12 @@ def draw(dist):
  
 
 def round5(number):
-    """Round *number* to multiples of 5."""
+    """Round down *number* to multiples of 5."""
     return 5 * int(number / 5)
-        
+
+    
 def shiftTimes(times, distance, max=None):
-    """Increase times within the (sorted!) list *times* so that consecutive have at least distance *distance*.
+    """Increase times within the (sorted!) list *times* so that consecutive times have at least distance *distance*.
     Raise an error when this requires to excess *max*."""
     if len(times) == 0:
         return
@@ -651,72 +794,105 @@ def shiftTimes(times, distance, max=None):
     if max is not None and times[-1] > max:
         raise InvalidMissionError("Time {} reached max {}".format(times[-1], max))
     
-def mean(list):
-    """Return the sample mean of *list*."""
-    return sum(list)/len(list)
-    
-def var(list):
-    """Return the sample variance of *list*."""
-    m = mean(list)
-    return sum(x*x-m*m for x in list) / len(list)
-    
-    
-def makeStatistics(number, fivePlayers=False, unconfirmed=False, verbose=False):
-    """Generate *number* missions and print some statistics."""
-    generator = MissionGenerator()
-    turnTimes = collections.defaultdict(list)
-    ithTimes = {1: collections.defaultdict(list), 2: collections.defaultdict(list)}
-    ambush = {1: 0, 2: 0}
-    difficulties = []
-    failed = 0
-    threatDistribution = generator.THREAT_DISTRIBUTION_5P if fivePlayers else generator.THREAT_DISTRIBUTION_4P
-    threatDist = {t: 0 for t in threatDistribution}
-    for x in range(number):
-        try:
-            mission = generator.makeMission(fivePlayers, unconfirmed)
-        except RuntimeError as e:
-            failed += 1
-            if verbose:
-                print("Error: {}".format(e))
-        else:
-            iDict = {1: 1, 2: 1}
-            threats = {t: 0 for t in THREAT_TYPES}
-            for event in mission.events:
-                if isinstance(event, Alert):
-                    threats[event.type] += 1
-                    turnTimes[event.turn].append(event.time - event.phase.start)
-                    i = iDict[event.phase.number]
-                    ithTimes[event.phase.number][i].append(event.time - event.phase.start)
-                    iDict[event.phase.number] += 1
-                    if event.ambush:
-                        ambush[event.phase.number] += 1
-            threatDist[tuple(threats[t] for t in THREAT_TYPES)] += 1 
-            difficulties.append(mission.difficulty()) 
-    
-    print("Threat distribution:")
-    s = sum(threatDistribution.values())
-    for t in sorted(threatDistribution.keys()):
-        print("{}: {:2d}   {:.2f}    {:2d}%    {:2d}%".format(t, threatDistribution[t], threatDist[t] / number * s, int(threatDistribution[t]/s*100), int(threatDist[t] / number * 100)))
-    print("Failed: {}   ({:.2f}%)".format(failed, failed/number*100))
-    print("----------------------")
-    print("Threats in turns")
-    for i in range(1,9):
-        if i in turnTimes:
-            print("{}: {:.2f}".format(i, mean(turnTimes[i])))
+
+class ThreatTuple:
+    """Data structure used by chooseThreatTuple. It contains counters for all four threat types and
+    constraints based on *options*. Whenever threats are added via the add-method, it is checked whether
+    the constraints allow adding those threats. If so, the counters are added and the constraints
+    changed accordingly (e.g. maxCount is decreased by the number of threats added).
+    """
+    def __init__(self, options):
+        self.options = options
+        if not (1 <= options.minCount <= options.maxCount):
+            raise ValueError("chooseThreatTuple: Invalid minCount/maxCount values: {}"
+                             .format((options.minCount, options.maxCount)))
+        if not (0 <= options.minCountInternal <= options.maxCountInternal):
+            raise ValueError("chooseThreatTuple: Invalid minCountInternal/maxCountInternal values: {}"
+                             .format((options.minCountInternal, options.maxCountInternal)))
+        if not (0 <= options.minTpInternal <= options.maxTpInternal):
+            raise ValueError("chooseThreatTuple: Invalid minCount/maxCount values: {}"
+                             .format((options.minTpInternal, options.maxTpInternal)))
+        if options.minCount > options.threatPoints:
+            raise ValueError("chooseThreatTuple: minCount {} is too high for {} threat points."
+                             .format(options.minCount, options.threatPoints))
+        if 2*options.maxCount < options.threatPoints:
+            raise ValueError("chooseThreatTuple: maxCount {} is too low for {} threat points."
+                             .format(options.maxCount, options.threatPoints))
+        if options.minCountInternal > options.maxTpInternal:
+            raise ValueError("chooseThreatTuple: minCountInternal {} is too high "
+                             "for {} internal threat points."
+                             .format(options.minCountInternal, options.maxTpInternal))
+        if 2*options.maxCountInternal < options.minTpInternal:
+            raise ValueError("chooseThreatTuple: maxCountInternal {} is too low "
+                             "for {} internal threat points."
+                             .format(options.maxCountInternal, options.minTpInternal))
+        if options.minCountInternal > options.maxCount:
+            raise ValueError("chooseThreatTuple: Invalid minCountInternal/maxCount values: {}"
+                             .format((options.minCountInternal, options.maxCount)))
+        if options.minTpInternal > options.threatPoints:
+            raise ValueError("chooseThreatTuple: Invalid minTpInternal/threatPoints values: {}"
+                             .format((options.minTpInternal, options.threatPoints)))
+            
+        self.counters = {tt: 0 for tt in THREAT_TYPES}
         
-    for p in 1,2:
-        print("----------------------")
-        print("i-th Threat in Phase {}".format(p))
-        for i in range(1,5):
-            if i in ithTimes[p]:
-                print("{}: {:.2f}".format(i, mean(ithTimes[p][i])))
-                            
-    print("----------------------")
-    print("Ambush in Phase 1: {:.2f}".format(ambush[1]/number))
-    print("Ambush in Phase 2: {:.2f}".format(ambush[2]/number))
-    print("Difficulty: {:.2f} {:.2f}".format(mean(difficulties), var(difficulties)))
+        # Store local variables because we will change them
+        self.threatPoints = options.threatPoints
+        self.minCount = options.minCount
+        self.maxCount = options.maxCount
+        self.minCountInternal = options.minCountInternal
+        self.maxCountInternal = min(options.maxCountInternal, options.maxCount)
+        self.minTpInternal = max(options.minTpInternal, options.minCountInternal)
+        self.maxTpInternal = min(options.maxTpInternal, 2*options.maxCountInternal, options.threatPoints)
     
-    
+    def __getitem__(self, threatType):
+        return self.counters[threatType]
+        
+    def add(self, threatType, number=1):
+        assert threatType in THREAT_TYPES
+        if self.maxCount < number:
+            raise ValueError("Cannot add {} new threats due to maxCount constraint.".format(number))
+        if number * threatType.points > self.threatPoints:
+            raise ValueError("Cannot add {} new threats due to threat points constraint.".format(number))
+        if threatType.internal:
+            if self.maxCountInternal < number:
+                raise ValueError("Cannot add {} new internal threats due to maxCountInternal constraint."
+                                 .format(number))
+            if number * threatType.points > self.maxTpInternal:
+                raise ValueError("Cannot add {} new internal threats due to maxTpInternal constraint."
+                                 .format(number))
+           
+        self.counters[threatType] += number
+        
+        self.minCount = max(0, self.minCount - number)
+        self.maxCount -= number
+        self.threatPoints -= number * threatType.points
+        if threatType.internal:
+            self.minCountInternal = max(0, self.minCountInternal - number)
+            self.maxCountInternal -= number
+            self.minTpInternal = max(0, self.minTpInternal - number*threatType.points)
+            self.maxTpInternal -= number * threatType.points
+            self.tpInternal -= number * threatType.points
+        else:
+            self.tpExternal -= number* threatType.points
+            
+    def check(self):
+        if not (self.options.minCount <= sum(self.counters.values()) <= self.options.maxCount
+                and self.options.minCountInternal
+                        <= self[T_INTERNAL]+self[T_SERIOUS_INTERNAL]
+                        <= self.options.maxCountInternal
+                and sum(self[tt]*tt.points for tt in THREAT_TYPES) == self.options.threatPoints
+                and self.options.minTpInternal
+                        <= sum(self[tt]*tt.points for tt in THREAT_TYPES if tt.internal) 
+                        <= self.options.maxTpInternal):
+            assert False
+            
+    def __str__(self):
+        return str(self.asTuple())
+        
+    def asTuple(self):
+       return tuple(self.counters[k] for k in THREAT_TYPES)
+       
+
 def drawEvents(events, length=None, width=80):
     """Draw a visual representation of *events* in one line of *width* characters on the terminal.
     *length* is the length of the mission. If it is not given, the endtime of the last event is used."""
@@ -735,45 +911,47 @@ def drawEvents(events, length=None, width=80):
             blockString += '#'*(endPos-len(blockString)-1)
         else: pass #print("Skipped {}".format(event)) # this event's visual representation would be contained in the previous event's one
     print(blockString)
-            
-        
+    
+    
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Generate missions for Vlaada Chvatil's Space Alert. In default mode this script will output a script for the Flash App at http://www.phipsisoftware.com/SpaceAlert.html")
-    parser.add_argument("--stat", help="Generate many missions and print statistics.", action="store_true")
+    parser = argparse.ArgumentParser(description="Generate missions for Vlaada Chvatil's Space Alert. In default mode this script will output a script for the Flash app at http://www.phipsisoftware.com/SpaceAlert.html")
     parser.add_argument('-n', "--number", help="Number of missions to generate for the statistics.", type=int, default=1000)
     parser.add_argument("--log", help="Print log", action="store_true")
     parser.add_argument("--draw", help="Draw timeline", action="store_true")
     parser.add_argument('-w', "--width", help="Length of the timeline in characters.", type=int, default=80)
     parser.add_argument("--script", help="Print script", action="store_true")
     parser.add_argument('-a', "--all", help="Print log, draw timeline and print script.", action="store_true")
-    # Concerning the special combination nargs+const+default:  '-u 3' -> 3; '-u'   -> 4 (const); ''     -> 0 (default)
-    parser.add_argument("-u", "--unconfirmed", help="Special mode: Use unconfirmed reports for approximately half of the alerts (counting serious alerts twice). Use this to draw e.g. a white card for normal alerts and a yellow card for unconfirmed reports to get a mission of medium difficulty.", nargs='?', const=4, default=0, type=int)
+    # Concerning the special combination nargs+const+default:  '-u 3' -> 3; '-u'   -> -1 (const); ''     -> 0 (default)
+    parser.add_argument("-u", "--unconfirmed", help="Special mode: Use unconfirmed reports for approximately half of the alerts (counting serious alerts twice). Use this to draw e.g. a white card for normal alerts and a yellow card for unconfirmed reports to get a mission of medium difficulty. Optionally you can specify a number to exactly determine the number of unconfirmed threat points.", nargs='?', const=-1, default=0, type=int)
     parser.add_argument("-p", "--players", help="Number of players. Only 4 or 5 players are supported.", type=int, choices=[4,5])
-    parser.add_argument('-v', '--verbose', action="store_true")
     parser.add_argument('--seed', help="Seed for the random number generator", type=int, default=None)
+    parser.add_argument('-d', "--double", help="Generate a mission for double actions.", action="store_true")
+    parser.add_argument("--solo", help="Do not generate events which are ignored in solo play.", action="store_true")
+    parser.add_argument('--alertCounters', help="Print an overview over the number of alerts of different types.", action="store_true")
 
     args = parser.parse_args()
     if args.seed is not None:
         random.seed(args.seed)
     
-    if args.stat:
-        makeStatistics(args.number)
+    if args.double:
+        options = Options.createDoubleActions(args.players, solo=args.solo, unconfirmed=args.unconfirmed)
+    else: options = Options.create(args.players, solo=args.solo, unconfirmed=args.unconfirmed)
+    generator = MissionGenerator(options)
+    try:
+        mission = generator.makeMission()
+    except RuntimeError as e:
+        print("Error: {}".format(e))
     else:
-        generator = MissionGenerator()
-        try:
-            mission = generator.makeMission(fivePlayers=args.players==5, unconfirmed=args.unconfirmed, verbose=args.verbose)
-        except RuntimeError as e:
-            print("Error: {}".format(e))
-        else:
-            if not any([args.log, args.draw, args.script]):
-                args.script = True
-            if args.all:
-                args.log = args.draw = args.script = True
-            if args.log:
-                print(mission.log())
-            if args.draw:
-                drawEvents(mission.events, width=args.width)
-            if args.script:
-                print(mission.script())
-            
+        if not any([args.log, args.draw, args.script]):
+            args.script = True
+        if args.all:
+            args.log = args.draw = args.script = True
+        if args.log:
+            print(mission.log())
+        if args.draw:
+            drawEvents(mission.events, width=args.width)
+        if args.script:
+            print(mission.script())
+        if args.alertCounters:
+            print(mission.alertCounters())
