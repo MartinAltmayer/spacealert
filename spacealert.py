@@ -26,6 +26,7 @@ class Options:
     length = 600 # Length of mission in seconds
     doubleActions = False # Whether double actions are used. Currently this only affects the distribution
                           # of length to the three phases.
+    solo = False          # Don't create events that are ignored in solo missions.
     
     # Threat number and types
     #========================
@@ -36,6 +37,7 @@ class Options:
     maxTpInternal = 3      # Maximal number of internal threat points.
     minCountInternal = 1   # Minimal number of internal threats.
     maxCountInternal = 2   # Maximal number of internal threats.
+    unconfirmed = 0        # Number of "unconfirmed" threat points.
     pInternal = 0.43       # Probability specifying the binomial distribution for the amount of internal
                            # threat points.
     pSerious = 0.5         # Probability specifying the binomial distribution for the total number of
@@ -67,12 +69,20 @@ class Options:
                      # Thus a high number of surplus times shifts the distribution of all times to lower values.
     ambushProbabilities = (0.25, 0.25) # probability of an ambush in phase 1, resp. 2
     
+    OPTIONS = [("length", int), ("doubleActions", bool), ("solo", bool), ("threatPoints", int), ("minCount", int), ("maxCount", int), ("minTpInternal", int), ("maxTpInternal", int), ("minCountInternal", int), ("maxCountInternal", int),("unconfirmed", int), ("pInternal", float), ("pSerious", float), ("pSeriousInternal", float), ("minTpPerPhase", int), ("maxTpPerPhase", int), ("earliestInternal", int), ("latestInternal", int), ("earliestSeriousInternal", int),("latestSeriousInternal", int), ("allowConsecutiveInternalThreats", bool), ("allowSimultaneousThreats", bool), ("maxInternalThreatsPerPhase", int), ("maxTpPerTurn", int)]
     
     def __init__(self, **args):
-        self.__dict__.update(args)
+        self.update(**args)
         
     def update(self, **args):
-        self.__dict__.update(args)
+        for option, oType in self.OPTIONS:
+            if option in args:
+                value = args[option]
+                if isinstance(value, str): # convert value
+                    if oType is bool:
+                        value = args[option].lower() in ['1', 'true', 'yes', 'y']
+                    else: value = oType(args[option])
+                setattr(self, option, value)
         
     @staticmethod
     def create(playerNumber, **args):
@@ -929,6 +939,7 @@ if __name__ == "__main__":
     parser.add_argument('-d', "--double", help="Generate a mission for double actions.", action="store_true")
     parser.add_argument("--solo", help="Do not generate events which are ignored in solo play.", action="store_true")
     parser.add_argument('--alertCounters', help="Print an overview over the number of alerts of different types.", action="store_true")
+    parser.add_argument('-o', "--option", help="Set the value of an arbitrary option using the format key=value.", type=str, action="append")
 
     args = parser.parse_args()
     if args.seed is not None:
@@ -937,6 +948,10 @@ if __name__ == "__main__":
     if args.double:
         options = Options.createDoubleActions(args.players, solo=args.solo, unconfirmed=args.unconfirmed)
     else: options = Options.create(args.players, solo=args.solo, unconfirmed=args.unconfirmed)
+    if len(args.option):
+        overwrites = dict(keyEqValue.split('=') for keyEqValue in args.option)
+        options.update(**overwrites)
+            
     generator = MissionGenerator(options)
     try:
         mission = generator.makeMission()
