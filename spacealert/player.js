@@ -451,7 +451,7 @@ Label.draw = function() {
     ctx.save();
     ctx.clearRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
     ctx.translate(this.rect.x + this.rect.width/2, this.rect.y + 40);
-    ctx.font = "40pt Sans";
+    ctx.font = "40pt Sans-serif";
     ctx.textAlign = "center";
     ctx.fillStyle = "blue";
     ctx.fillText(this.text, 0, 0);
@@ -487,7 +487,7 @@ AlertWidget.draw = function() {
     drawCenteredImage(this.zonesImage, 0, 0);
     drawCenteredImage(this.turnImage, 200, 0);
     ctx.fillStyle = "#f2e32e";
-    ctx.font = "30pt Sans";
+    ctx.font = "30pt Sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(this.alert.turn.toString(), 200, 15);
     
@@ -598,13 +598,13 @@ DataTransferWidget.draw = function() {
 }
 
 function fillWrappedText(text, lineHeight, enlargeLastLine) {
-    ctx.font = "40pt Sans";
+    ctx.font = "40pt Sans-serif";
     var lines = text.split('\n');
     var y = -0.5*lines.length*lineHeight;
     ctx.textAlign = "center";
     for(var i=0; i<lines.length; i++) {
         if (enlargeLastLine && i==lines.length-1) {
-            ctx.font = "60pt Sans";
+            ctx.font = "60pt Sans-serif";
         }
         var line = lines[i];
         var metrics = ctx.measureText(line);
