@@ -9,7 +9,7 @@ Features:
 - Supports mixed mission difficulties (e.g. white-yellow), see below.
 - Supports missions for double action cards (for the expansion).
 
-![Main menu](/menu.png)
+![Main menu](/menu.png?raw=true)
 
 
 Usage
@@ -41,4 +41,4 @@ While this software is published under the GPL, this does not include the sound 
 This program was inspired by the Flash-based player at
 http://www.phipsisoftware.com/SpaceAlert.htm
 
-![Player screenshot](/alert.png)
+![Player screenshot](/alert.png?raw=true)
