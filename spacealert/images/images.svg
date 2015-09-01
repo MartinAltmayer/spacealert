@@ -1,0 +1,700 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   id="svg4421"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="images.svg">
+  <defs
+     id="defs4423" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#000000"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="1"
+     inkscape:pageshadow="2"
+     inkscape:zoom="4"
+     inkscape:cx="409.70037"
+     inkscape:cy="470"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1855"
+     inkscape:window-height="1056"
+     inkscape:window-x="65"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata4426">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       sodipodi:type="arc"
+       style="fill:none;stroke:#ededed;stroke-width:2;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path3853"
+       sodipodi:cx="519"
+       sodipodi:cy="538.75"
+       sodipodi:rx="16.375"
+       sodipodi:ry="16.375"
+       d="m 535.375,538.75 a 16.375,16.375 0 1 1 -32.75,0 16.375,16.375 0 1 1 32.75,0 z"
+       transform="matrix(0.95323741,0,0,0.95323741,-306.15879,58.805528)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/alert_white.png"
+       inkscape:export-xdpi="271.69812"
+       inkscape:export-ydpi="271.69812" />
+    <rect
+       style="fill:#ededed;fill-opacity:1;stroke:none"
+       id="rect4369"
+       width="17"
+       height="4.25"
+       x="-279.43909"
+       y="536.11304"
+       rx="0"
+       transform="matrix(0.70710678,-0.70710678,0.70710678,0.70710678,0,0)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/alert_white.png"
+       inkscape:export-xdpi="271.69812"
+       inkscape:export-ydpi="271.69812" />
+    <rect
+       style="fill:#ededed;fill-opacity:1;stroke:none"
+       id="rect4369-7"
+       width="17"
+       height="4.25"
+       x="-546.73804"
+       y="-273.06409"
+       rx="0"
+       transform="matrix(-0.70710678,-0.70710678,0.70710678,-0.70710678,0,0)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/alert_white.png"
+       inkscape:export-xdpi="271.69812"
+       inkscape:export-ydpi="271.69812" />
+    <path
+       sodipodi:type="arc"
+       style="fill:none;stroke:#ccae36;stroke-width:1.99950188999999989;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:0.93333334;stroke-dasharray:none"
+       id="path3853-2"
+       sodipodi:cx="519"
+       sodipodi:cy="538.75"
+       sodipodi:rx="16.375"
+       sodipodi:ry="16.375"
+       d="m 535.375,538.75 a 16.375,16.375 0 1 1 -32.75,0 16.375,16.375 0 1 1 32.75,0 z"
+       transform="matrix(0.95323741,0,0,0.95323741,-257.98022,57.305527)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/alert_yellow.png"
+       inkscape:export-xdpi="271.69812"
+       inkscape:export-ydpi="271.69812" />
+    <rect
+       style="fill:#ccae36;fill-opacity:1;stroke:none"
+       id="rect4369-1"
+       width="17"
+       height="4.25"
+       x="-244.31102"
+       y="569.11975"
+       rx="0"
+       transform="matrix(0.70710678,-0.70710678,0.70710678,0.70710678,0,0)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/alert_yellow.png"
+       inkscape:export-xdpi="271.69812"
+       inkscape:export-ydpi="271.69812" />
+    <rect
+       style="fill:#ccae36;fill-opacity:1;stroke:none"
+       id="rect4369-7-9"
+       width="17"
+       height="4.25"
+       x="-579.74475"
+       y="-237.93602"
+       rx="0"
+       transform="matrix(-0.70710678,-0.70710678,0.70710678,-0.70710678,0,0)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/alert_yellow.png"
+       inkscape:export-xdpi="271.69812"
+       inkscape:export-ydpi="271.69812" />
+    <path
+       sodipodi:type="arc"
+       style="fill:none;stroke:#d00000;stroke-width:2;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path3853-8"
+       sodipodi:cx="519"
+       sodipodi:cy="538.75"
+       sodipodi:rx="16.375"
+       sodipodi:ry="16.375"
+       d="m 535.375,538.75 a 16.375,16.375 0 1 1 -32.75,0 16.375,16.375 0 1 1 32.75,0 z"
+       transform="matrix(0.95323741,0,0,0.95323741,-213.98022,57.555527)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/alert_red.png"
+       inkscape:export-xdpi="271.69812"
+       inkscape:export-ydpi="271.69812" />
+    <rect
+       style="fill:#d00000;fill-opacity:1;stroke:none"
+       id="rect4369-8"
+       width="17"
+       height="4.25"
+       x="-213.37509"
+       y="600.40924"
+       rx="0"
+       transform="matrix(0.70710678,-0.70710678,0.70710678,0.70710678,0,0)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/alert_red.png"
+       inkscape:export-xdpi="271.69812"
+       inkscape:export-ydpi="271.69812" />
+    <rect
+       style="fill:#d00000;fill-opacity:1;stroke:none"
+       id="rect4369-7-1"
+       width="17"
+       height="4.25"
+       x="-611.03424"
+       y="-207.00009"
+       rx="0"
+       transform="matrix(-0.70710678,-0.70710678,0.70710678,-0.70710678,0,0)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/alert_red.png"
+       inkscape:export-xdpi="271.69812"
+       inkscape:export-ydpi="271.69812" />
+    <path
+       sodipodi:type="arc"
+       style="fill:none;stroke:#d00000;stroke-width:2;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path3853-8-7"
+       sodipodi:cx="519"
+       sodipodi:cy="538.75"
+       sodipodi:rx="16.375"
+       sodipodi:ry="16.375"
+       d="m 535.375,538.75 a 16.375,16.375 0 1 1 -32.75,0 16.375,16.375 0 1 1 32.75,0 z"
+       transform="matrix(0.95323741,0,0,0.95323741,-211.98022,100.30553)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_red.png"
+       inkscape:export-xdpi="271.69812"
+       inkscape:export-ydpi="271.69812" />
+    <path
+       style="fill:#d00000;fill-opacity:1;stroke:none"
+       d="m 274.17323,605.91214 4.094,0 -0.6,11.40211 -2.894,0 z"
+       id="rect5530"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_red.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <rect
+       style="fill:#d00000;fill-opacity:1;stroke:none"
+       id="rect5532"
+       width="3.6299388"
+       height="3.7949178"
+       x="274.40829"
+       y="618.73132"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_red.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <rect
+       style="fill:#d00000;fill-opacity:1;stroke:none"
+       id="rect5532-4"
+       width="3.6299388"
+       height="3.7949178"
+       x="280.88123"
+       y="618.73132"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_red.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <rect
+       style="fill:#d00000;fill-opacity:1;stroke:none"
+       id="rect5532-4-4"
+       width="3.6299388"
+       height="3.7949178"
+       x="287.35416"
+       y="618.73132"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_red.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#d00000;fill-opacity:1;stroke:none"
+       d="m 280.55931,605.91214 4.094,0 -0.6,11.40211 -2.894,0 z"
+       id="rect5530-1"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_red.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#d00000;fill-opacity:1;stroke:none"
+       d="m 286.94537,605.91214 4.094,0 -0.6,11.40211 -2.894,0 z"
+       id="rect5530-4"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_red.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       sodipodi:type="arc"
+       style="fill:none;stroke:#ccae36;stroke-width:2;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path3853-8-7-1"
+       sodipodi:cx="519"
+       sodipodi:cy="538.75"
+       sodipodi:rx="16.375"
+       sodipodi:ry="16.375"
+       d="m 535.375,538.75 a 16.375,16.375 0 1 1 -32.75,0 16.375,16.375 0 1 1 32.75,0 z"
+       transform="matrix(0.95323741,0,0,0.95323741,-256.73022,100.55553)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_yellow.png"
+       inkscape:export-xdpi="271.69812"
+       inkscape:export-ydpi="271.69812" />
+    <path
+       style="fill:#ccae36;fill-opacity:1;stroke:none"
+       d="m 229.42324,606.16213 4.094,0 -0.6,11.40211 -2.894,0 z"
+       id="rect5530-7"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_yellow.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <rect
+       style="fill:#ccae36;fill-opacity:1;stroke:none"
+       id="rect5532-6"
+       width="3.6299388"
+       height="3.7949178"
+       x="229.65829"
+       y="618.98132"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_yellow.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <rect
+       style="fill:#ccae36;fill-opacity:1;stroke:none"
+       id="rect5532-4-2"
+       width="3.6299388"
+       height="3.7949178"
+       x="236.13123"
+       y="618.98132"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_yellow.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <rect
+       style="fill:#ccae36;fill-opacity:1;stroke:none"
+       id="rect5532-4-4-1"
+       width="3.6299388"
+       height="3.7949178"
+       x="242.60416"
+       y="618.98132"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_yellow.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#ccae36;fill-opacity:1;stroke:none"
+       d="m 235.80932,606.16213 4.094,0 -0.6,11.40211 -2.894,0 z"
+       id="rect5530-1-9"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_yellow.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#ccae36;fill-opacity:1;stroke:none"
+       d="m 242.19538,606.16213 4.094,0 -0.6,11.40211 -2.894,0 z"
+       id="rect5530-4-5"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_yellow.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       sodipodi:type="arc"
+       style="fill:none;stroke:#ededed;stroke-width:2;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path3853-8-7-1-3"
+       sodipodi:cx="519"
+       sodipodi:cy="538.75"
+       sodipodi:rx="16.375"
+       sodipodi:ry="16.375"
+       d="m 535.375,538.75 a 16.375,16.375 0 1 1 -32.75,0 16.375,16.375 0 1 1 32.75,0 z"
+       transform="matrix(0.95323741,0,0,0.95323741,-304.98022,101.30553)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_white.png"
+       inkscape:export-xdpi="271.69812"
+       inkscape:export-ydpi="271.69812" />
+    <path
+       style="fill:#ededed;fill-opacity:1;stroke:none"
+       d="m 181.17325,606.91212 4.094,0 -0.6,11.40211 -2.894,0 z"
+       id="rect5530-7-7"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_white.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <rect
+       style="fill:#ededed;fill-opacity:1;stroke:none"
+       id="rect5532-6-0"
+       width="3.6299388"
+       height="3.7949178"
+       x="181.40831"
+       y="619.73132"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_white.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <rect
+       style="fill:#ededed;fill-opacity:1;stroke:none"
+       id="rect5532-4-2-0"
+       width="3.6299388"
+       height="3.7949178"
+       x="187.88124"
+       y="619.73132"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_white.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <rect
+       style="fill:#ededed;fill-opacity:1;stroke:none"
+       id="rect5532-4-4-1-9"
+       width="3.6299388"
+       height="3.7949178"
+       x="194.35417"
+       y="619.73132"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_white.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#ededed;fill-opacity:1;stroke:none"
+       d="m 187.55933,606.91212 4.094,0 -0.6,11.40211 -2.894,0 z"
+       id="rect5530-1-9-1"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_white.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#ededed;fill-opacity:1;stroke:none"
+       d="m 193.94539,606.91212 4.094,0 -0.6,11.40211 -2.894,0 z"
+       id="rect5530-4-5-0"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/serious_alert_white.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 86.20146,491.0775 3.71231,-3.71231 13.78858,0 4.06586,3.71231 -7.60139,9.45756 -6.01041,0 z"
+       id="path3143"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 71.26382,501.86087 -0.35355,-5.65685 7.42462,-4.77297 7.07106,0.35355 4.5962,6.36396 -5.3033,3.35876 z"
+       id="path3913"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 122.70584,501.86087 0.35355,-5.65685 -7.42462,-4.77297 -7.07106,0.35355 -4.5962,6.36396 5.3033,3.35876 z"
+       id="path3913-1"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 61.5411,517.6824 9.8995,-13.96536 13.78858,-0.35355 2.82843,3.0052 -9.72272,11.49049 z"
+       id="path3933"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 132.9589,517.6824 -9.8995,-13.96536 -13.78858,-0.35355 -2.82843,3.0052 9.72272,11.49049 z"
+       id="path3933-5"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 85.401,514.23481 4.013,3.71231 14.788,0 4.366,-3.71231 -8.40118,-9.45756 -6.01041,0 z"
+       id="path3143-3"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 87.70146,532.78353 3.71231,-3.71231 13.78858,0 4.06586,3.71231 -7.60139,9.45756 -6.01041,0 z"
+       id="path3143-24"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_red.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#d00000;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1;fill-opacity:1"
+       d="m 72.76382,543.5669 -0.35355,-5.65685 7.42462,-4.77297 7.07106,0.35355 4.5962,6.36396 -5.3033,3.35876 z"
+       id="path3913-3"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_red.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 124.20584,543.5669 0.35355,-5.65685 -7.42462,-4.77297 -7.07106,0.35355 -4.5962,6.36396 5.3033,3.35876 z"
+       id="path3913-1-7"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_red.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#d00000;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1;fill-opacity:1"
+       d="m 63.0411,559.38843 9.8995,-13.96536 13.78858,-0.35355 2.82843,3.0052 -9.72272,11.49049 z"
+       id="path3933-32"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_red.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 134.4589,559.38843 -9.8995,-13.96536 -13.78858,-0.35355 -2.82843,3.0052 9.72272,11.49049 z"
+       id="path3933-5-7"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_red.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 86.901,555.94084 4.013,3.71231 14.788,0 4.366,-3.71231 -8.40118,-9.45756 -6.01041,0 z"
+       id="path3143-3-9"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_red.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#ededed;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1;fill-opacity:1"
+       d="m 85.70146,573.53353 3.71231,-3.71231 13.78858,0 4.06586,3.71231 -7.60139,9.45756 -6.01041,0 z"
+       id="path3143-5"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_white.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 70.76382,584.3169 -0.35355,-5.65685 7.42462,-4.77297 7.07106,0.35355 4.5962,6.36396 -5.3033,3.35876 z"
+       id="path3913-8"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_white.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 122.20584,584.3169 0.35355,-5.65685 -7.42462,-4.77297 -7.07106,0.35355 -4.5962,6.36396 5.3033,3.35876 z"
+       id="path3913-1-94"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_white.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 61.0411,600.13843 9.8995,-13.96536 13.78858,-0.35355 2.82843,3.0052 -9.72272,11.49049 z"
+       id="path3933-52"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_white.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 132.4589,600.13843 -9.8995,-13.96536 -13.78858,-0.35355 -2.82843,3.0052 9.72272,11.49049 z"
+       id="path3933-5-8"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_white.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#ededed;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1;fill-opacity:1"
+       d="m 84.901,596.69084 4.013,3.71231 14.788,0 4.366,-3.71231 -8.40118,-9.45756 -6.01041,0 z"
+       id="path3143-3-4"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_white.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 83.70146,614.53353 3.71231,-3.71231 13.78858,0 4.06586,3.71231 -7.60139,9.45756 -6.01041,0 z"
+       id="path3143-9"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_blue.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 68.76382,625.3169 -0.35355,-5.65685 7.42462,-4.77297 7.07106,0.35355 4.5962,6.36396 -5.3033,3.35876 z"
+       id="path3913-6"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_blue.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#0000d3;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1;fill-opacity:1"
+       d="m 120.20584,625.3169 0.35355,-5.65685 -7.42462,-4.77297 -7.07106,0.35355 -4.5962,6.36396 5.3033,3.35876 z"
+       id="path3913-1-73"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_blue.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 59.0411,641.13843 9.8995,-13.96536 13.78858,-0.35355 2.82843,3.0052 -9.72272,11.49049 z"
+       id="path3933-4"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_blue.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#0000d3;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1;fill-opacity:1"
+       d="m 130.4589,641.13843 -9.8995,-13.96536 -13.78858,-0.35355 -2.82843,3.0052 9.72272,11.49049 z"
+       id="path3933-5-9"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_blue.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1"
+       d="m 82.901,637.69084 4.013,3.71231 14.788,0 4.366,-3.71231 -8.40118,-9.45756 -6.01041,0 z"
+       id="path3143-3-0"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_blue.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#04b100;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1;fill-opacity:1"
+       d="m 83.20146,657.28353 3.71231,-3.71231 13.78858,0 4.06586,3.71231 -7.60139,9.45756 -6.01041,0 z"
+       id="path3143-29"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_internal.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#04b100;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1;fill-opacity:1"
+       d="m 68.26382,668.0669 -0.35355,-5.65685 7.42462,-4.77297 7.07106,0.35355 4.5962,6.36396 -5.3033,3.35876 z"
+       id="path3913-77"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_internal.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#04b100;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1;fill-opacity:1"
+       d="m 119.70584,668.0669 0.35355,-5.65685 -7.42462,-4.77297 -7.07106,0.35355 -4.5962,6.36396 5.3033,3.35876 z"
+       id="path3913-1-78"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_internal.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#04b100;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1;fill-opacity:1"
+       d="m 58.5411,683.88843 9.8995,-13.96536 13.78858,-0.35355 2.82843,3.0052 -9.72272,11.49049 z"
+       id="path3933-46"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_internal.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#04b100;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1;fill-opacity:1"
+       d="m 129.9589,683.88843 -9.8995,-13.96536 -13.78858,-0.35355 -2.82843,3.0052 9.72272,11.49049 z"
+       id="path3933-5-94"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_internal.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <path
+       style="fill:#04b100;stroke:#ffffff;stroke-linejoin:round;stroke-opacity:1;fill-opacity:1"
+       d="m 82.401,680.44084 4.013,3.71231 14.788,0 4.366,-3.71231 -8.40118,-9.45756 -6.01041,0 z"
+       id="path3143-3-1"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/zones_internal.png"
+       inkscape:export-xdpi="271"
+       inkscape:export-ydpi="271" />
+    <rect
+       style="fill:#f2e32e;fill-opacity:1;stroke:none"
+       id="rect4714"
+       width="89"
+       height="13.5"
+       x="396.5"
+       y="543.86218"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/turn.png"
+       inkscape:export-xdpi="70.751442"
+       inkscape:export-ydpi="70.751442" />
+    <path
+       style="fill:#f2e32e;fill-opacity:1;stroke:none"
+       d="m 396.5,616.86218 89,0 -40.5,13.5 z"
+       id="rect4714-7"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/turn.png"
+       inkscape:export-xdpi="70.751442"
+       inkscape:export-ydpi="70.751442" />
+    <rect
+       style="fill:#f2e32e;fill-opacity:1;stroke:none"
+       id="rect4753"
+       width="9.75"
+       height="4.5227532"
+       x="605.51758"
+       y="592.78632"
+       transform="matrix(1,0,-0.34201888,0.93969308,0,0)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/turn.png"
+       inkscape:export-xdpi="70.751442"
+       inkscape:export-ydpi="70.751442" />
+    <rect
+       style="fill:#f2e32e;fill-opacity:1;stroke:none"
+       id="rect4753-9"
+       width="9.75"
+       height="4.5227532"
+       x="622.48633"
+       y="592.78632"
+       transform="matrix(1,0,-0.34201888,0.93969308,0,0)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/turn.png"
+       inkscape:export-xdpi="70.751442"
+       inkscape:export-ydpi="70.751442" />
+    <rect
+       style="fill:#f2e32e;fill-opacity:1;stroke:none"
+       id="rect4753-9-5"
+       width="9.75"
+       height="4.5227532"
+       x="639.45508"
+       y="592.78632"
+       transform="matrix(1,0,-0.34201888,0.93969308,0,0)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/turn.png"
+       inkscape:export-xdpi="70.751442"
+       inkscape:export-ydpi="70.751442" />
+    <rect
+       style="fill:#f2e32e;fill-opacity:1;stroke:none"
+       id="rect4753-9-5-6"
+       width="9.75"
+       height="4.5227532"
+       x="656.42383"
+       y="592.78632"
+       transform="matrix(1,0,-0.34201888,0.93969308,0,0)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/turn.png"
+       inkscape:export-xdpi="70.751442"
+       inkscape:export-ydpi="70.751442" />
+    <rect
+       style="fill:#f2e32e;fill-opacity:1;stroke:none"
+       id="rect4753-9-5-6-5"
+       width="9.75"
+       height="4.5227532"
+       x="673.39258"
+       y="592.78632"
+       transform="matrix(1,0,-0.34201888,0.93969308,0,0)"
+       inkscape:export-filename="/media/daten/Projekte/spacealert/images/turn.png"
+       inkscape:export-xdpi="70.751442"
+       inkscape:export-ydpi="70.751442" />
+  </g>
+</svg>

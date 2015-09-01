@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Space alert mission generator
 # Copyright (C) 2013-2014 Martin Altmayer
+# https://github.com/MartinAltmayer/spacealert
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,12 +22,11 @@ MAX_ITERATIONS = 100
 
 class Options:
     """This class stores options that are read during mission generation. Instead of creating Options-instances via the constructor you probably want to use one of the create-methods."""
-    # Phase lengths
-    #===============
     length = 600 # Length of mission in seconds
     doubleActions = False # Whether double actions are used. Currently this only affects the distribution
                           # of length to the three phases.
     solo = False          # Don't create events that are ignored in solo missions.
+    difficulty = 'w'      # Difficulty: One of 'w', 'y', 'r' (white/yellow/red) or a combination e.g. 'wr'.
     
     # Threat number and types
     #========================
@@ -69,7 +69,7 @@ class Options:
                      # Thus a high number of surplus times shifts the distribution of all times to lower values.
     ambushProbabilities = (0.25, 0.25) # probability of an ambush in phase 1, resp. 2
     
-    OPTIONS = [("length", int), ("doubleActions", bool), ("solo", bool), ("threatPoints", int), ("minCount", int), ("maxCount", int), ("minTpInternal", int), ("maxTpInternal", int), ("minCountInternal", int), ("maxCountInternal", int),("unconfirmed", int), ("pInternal", float), ("pSerious", float), ("pSeriousInternal", float), ("minTpPerPhase", int), ("maxTpPerPhase", int), ("earliestInternal", int), ("latestInternal", int), ("earliestSeriousInternal", int),("latestSeriousInternal", int), ("allowConsecutiveInternalThreats", bool), ("allowSimultaneousThreats", bool), ("maxInternalThreatsPerPhase", int), ("maxTpPerTurn", int)]
+    OPTIONS = [("length", int), ("doubleActions", bool), ("solo", bool), ("threatPoints", int), ("minCount", int), ("maxCount", int), ("minTpInternal", int), ("maxTpInternal", int), ("minCountInternal", int), ("maxCountInternal", int),("difficulty", str), ("pInternal", float), ("pSerious", float), ("pSeriousInternal", float), ("minTpPerPhase", int), ("maxTpPerPhase", int), ("earliestInternal", int), ("latestInternal", int), ("earliestSeriousInternal", int),("latestSeriousInternal", int), ("allowConsecutiveInternalThreats", bool), ("allowSimultaneousThreats", bool), ("maxInternalThreatsPerPhase", int), ("maxTpPerTurn", int)]
     
     def __init__(self, **args):
         self.update(**args)
@@ -210,33 +210,37 @@ class Event:
     def end(self):
         # subclasses must either define 'duration' or provide a different implementation of 'end'
         return self.start + self.duration
+    
+    @classmethod
+    def fromString(cls, string):
+        return cls(parseTime(string))
         
         
 class Alert(Event):
     """The most important event: An attacking enemy."""
     duration = 15
-    def __init__(self, start=None, turn=None, type=None, zone=None, unconfirmed=False, ambush=False):
+    def __init__(self, start=None, turn=None, type=None, zone=None, difficulty="w", ambush=False):
         super().__init__(start)
         self.turn = turn
         self.type = type
         self.zone = zone
-        self.unconfirmed = False
+        self.difficulty = difficulty
         self.ambush = ambush
         
     def __repr__(self):
         return "{}{}{}{}{}".format(self.timeCode,
-                                   'AL' if not self.unconfirmed else 'UR',
+                                   'AL',
                                    self.turn,
                                    self.type.code,
                                    self.zone.code if self.zone is not None else '')
     
     @property
     def message(self):
-        unconfirmed = "Unconfirmed " if self.unconfirmed else ''
+        difficulty = {'w': 'White', 'y': 'Yellow', 'r': 'Red'}[self.difficulty]
         if self.zone is not None:
-            return "{} - Time T+{} {}{} Zone {}" \
-                   .format(self.timeString, self.turn, unconfirmed, self.type, self.zone)
-        else: return "{} - Time T+{} {}{}".format(self.timeString, self.turn, unconfirmed, self.type)
+            return "{} - Time T+{} {} {} on Zone {}" \
+                   .format(self.timeString, self.turn, difficulty, self.type, self.zone)
+        else: return "{} - Time T+{} {} {}".format(self.timeString, self.turn, difficulty, self.type)
     
     @property
     def internal(self):
@@ -252,28 +256,63 @@ class Alert(Event):
         
     @property
     def character(self):
-        return 'A' if not self.unconfirmed else 'U'
+        return 'A'
+    
+    @property
+    def threatPoints(self):
+        return 2 if self.serious else 1
+    
+    @staticmethod
+    def fromString(string, difficulty="w"):
+        """Return an alert from a string like '0:10 T+2 T White."""
+        time, turn, threatType, zone = (string + ' ').split(' ', 3) # zone might be empty
+        time = parseTime(time)
+        assert turn.startswith('T+')
+        turn = int(turn[2:])
+        if threatType == 'T':
+            threatType = T_EXTERNAL
+        elif threatType == 'ST':
+            threatType = T_SERIOUS_EXTERNAL
+        elif threatType == 'IT':
+            threatType = T_INTERNAL
+        elif threatType == 'SIT':
+            threatType = T_SERIOUS_INTERNAL
+        else: assert False
+        if threatType in (T_EXTERNAL, T_SERIOUS_EXTERNAL):
+            zone = zone.strip()
+            for z in ZONES:
+                if z.name.lower() == zone.lower():
+                    zone = z
+                    break
+            else: assert False
+        else: zone = None
+        return Alert(time, turn, threatType, zone, difficulty=difficulty)
         
-   
+    
 class PhaseEvent(Event):
     """PhaseEvents announce the end of a certain phase, e.g. "Phase 2 ends in 20 seconds.". *remaining* is the remaining time in seconds."""
-    duration = 4
-    def __init__(self, start, phase, remaining):
+    def __init__(self, start, phase, remaining, lastPhase=None):
         super().__init__(start)
         self.phase = phase
+        assert remaining in (7,20,60)
         self.remaining = remaining
+        self.lastPhase = lastPhase or (phase == 3);
+        
+        # Length of audio depends on parameters, compare player.js
+        if (self.remaining == 7):
+            self.duration = 14 if self.lastPhase else 13
+        else: self.duration = 5
         
     def __repr__(self):
-        if self.remaining is None:
-            return "{}PE{}".format(self.timeCode, self.phase.number)
-        else: return "{}PE{}-{}".format(self.timeCode, self.phase.number, self.remaining)
+        return "{}PE{}-{}".format(self.timeCode, self.phase.number, self.remaining)
+    
+    def getCode(self):
+        return "{}PE{}".format(self.start+self.remaining, self.phase.number);
     
     @property
     def message(self):        
-        if self.remaining is not None:
-            return "{} - Phase {} ends in {} seconds" \
-                   .format(self.timeString, self.phase.number, self.remaining)
-        else: return "{} - Phase {} ends".format(self.timeString, self.phase.number)
+        return "{} - Phase {} ends in {} seconds" \
+                .format(self.timeString, self.phase.number, self.remaining)
         
         
 class IncomingData(Event):
@@ -287,7 +326,7 @@ class IncomingData(Event):
         
         
 class DataTransfer(Event):
-    duration = 12
+    duration = 13
     def __repr__(self):
         return "{}DT".format(self.timeCode)
      
@@ -307,6 +346,13 @@ class CommunicationsDown(Event):
     @property
     def message(self):
         return "{} - Communication System Down ({} seconds)".format(self.timeString, self.duration)
+    
+    @staticmethod
+    def fromString(string):
+        start, end = string.split(' - ')
+        start = parseTime(start)
+        end = parseTime(end)
+        return CommunicationsDown(start, end - start)
   
 
 class Phase:
@@ -323,19 +369,27 @@ class Phase:
     def end(self):
         return self.start + self.length
         
-    def getFinalEvent(self):
-        return PhaseEvent(self.end, self, None)
-        
     def getEvents(self):
         """Return a list of all events that are necessary to announce the end of this phase properly."""
-        return [PhaseEvent(self.end-r, self, r) for r in (60,20,5)] + [self.getFinalEvent()]
+        
+        # 7 Seconds before phase ends the computer will start saying "Phase ends in 5 4 3..."
+        return [PhaseEvent(self.end-r, self, r) for r in (60,20,7)] 
         
     def __int__(self):
         return self.number-1
+    
+    @staticmethod
+    def fromString(string):
+        number, start, end = string.split(' - ')
+        number = int(number)
+        start = parseTime(start)
+        end = parseTime(end)
+        return Phase(number, start, end - start)
 
        
 class InvalidMissionError(Exception):
     pass
+
 
 class Mission:
     """A missions of SpaceAlert. This is mainly an ordered list of events, grouped into three phases."""
@@ -372,26 +426,8 @@ class Mission:
     def length(self):
         return self.events[-1].time if len(self.events) > 0 else 0
         
-    def log(self):
-        return "\n".join(event.message for event in self.events)
-        
-    def script(self, all=False):
-        """Return a script of this mission that can be used for the Flash app at http://www.phipsisoftware.com/SpaceAlert.html."""
-        return ','.join(str(event) for event in self.events
-                        if all or not isinstance(event, PhaseEvent) or event.remaining is None)
-          
-    def alertCounters(self):
-        lines = []
-        alerts = [event for event in self.events if isinstance(event, Alert)]
-        t = (sum(1 for a in alerts if a.type == type and not a.unconfirmed) for type in THREAT_TYPES)
-        lines.append("Threats {} T {} IT {} ST {} SIT".format(*t))
-        if any(alert.unconfirmed for alert in alerts):
-            t = (sum(1 for a in alerts if a.type == type and a.unconfirmed) for type in THREAT_TYPES)
-            lines.append("Unconf. {} T {} IT {} ST {} SIT".format(*t))
-        ambushCount = sum(1 for a in alerts if a.ambush)
-        if ambushCount > 0:
-            lines.append("{} Ambushes".format(ambushCount) if ambushCount > 1 else "1 Ambush")
-        return "\n".join(lines)
+    def log(self, separator="\n"):
+        return separator.join(event.message for event in self.events)
         
     def difficulty(self):
         """Experimental: Try to compute a difficulty value for this mission."""
@@ -411,12 +447,13 @@ class Mission:
         
     def collides(self, event):
         """Return whether the given event overlaps with any event of the mission."""
+        #TODO are the first two "or"s still necessary?
         return event.start < 10 \
                    or event.start in range(self.phases[1].start, self.phases[1].start+5) \
                    or event.start in range(self.phases[1].start, self.phases[1].start+5) \
                    or any(e.intersects(event) for e in self.events)
-           
        
+
 class MissionGenerator:
     """A MissionGenerator is Initialized with a set of options (either as object or as keyword-arguments) and can be used to generate one or more missions."""
     
@@ -493,7 +530,7 @@ class MissionGenerator:
                 alert.phase = self.mission.phases[0] if alert.turn <= 4 else self.mission.phases[1]
         self.chooseThreatTimes(alerts, self.mission.phases)
         self.chooseThreatZones(alerts)
-        self.chooseUnconfirmed(alerts)
+        self.chooseDifficulties(alerts)
         self.mission.addEvents(alerts)
         
     def chooseThreatTuple(self):
@@ -637,7 +674,7 @@ class MissionGenerator:
             if ambush:
                 # choose time of ambush
                 times.append(phase.end-50 + draw({0: 2, 5: 2, 10: 1}))
-                alert.ambush = True
+                phaseAlerts[-1].ambush = True
             for alert, time in zip(phaseAlerts, times):
                 alert.start = time
                 
@@ -648,38 +685,23 @@ class MissionGenerator:
                 alert.zone = random.choice([z for z in ZONES if z != lastZone])
                 lastZone = alert.zone
 
-    def chooseUnconfirmed(self, alerts):
-        # decide which alerts should be unconfirmed. Because there is a 4/5-player option, unconfirmed alerts are not necessary in their original meaning.
-        # Instead this option marks approximately one half of the alerts as "unconfirmed" (counting serious alerts twice). This can be used to get a mission
-        # of medium difficulty: draw yellow threats for "unconfirmed" alerts and white threats else.
-        if self.unconfirmed >= 0:
-            unconfirmed = min(self.unconfirmed, self.threatPoints)
-        else:
-            # unconfirmed should be approximately 1/2*threatPoints
-            if self.threatPoints % 2 == 0:
-                unconfirmed = self.threatPoints // 2
-            elif any(not alert.serious for alert in alerts):
-                unconfirmed = self.threatPoints // 2 + random.randint(0, 1)
-            else:
-                # special case, unconfirmed must be even
-                if self.threatPoints % 4 == 1:
-                    unconfirmed = self.threatPoints // 2
-                else: # threatPoints % 4 == 3
-                    unconfirmed = self.threatPoints // 2 + 1
-                    
-        while unconfirmed > 0:
-            # Number of alerts with 1 or 2 threat points, respectively
-            c1, c2 = [len([alert for alert in alerts if not alert.unconfirmed and alert.type.points == c]) for c in [1,2]]
+    def chooseDifficulties(self, alerts):
+        if self.difficulty is None:
+            return
+        sums = {}
+        for c in 'wyr':
+            if c in self.difficulty:
+                sums[c] = 0
+        if len(sums) == 0:
+            return # self.difficulty is invalid, keep defaults
             
-            dist = {}
-            for alert in alerts:
-                # skip alerts which cannot be part of a solution
-                if alert.unconfirmed or (unconfirmed % 2 == 0 and alert.type.points == 1 and c1 == 1) or (unconfirmed == 1 and alert.type.points == 2):
-                    continue
-                dist[alert] = alert.type.points
-            alert = draw(dist)
-            alert.unconfirmed = True
-            unconfirmed -= alert.type.points
+        # Use a greedy algorithm to partition alerts into difficulty groups.
+        # If there are two groups, this algorithm is 4/3-optimal
+        # https://en.wikipedia.org/wiki/Partition_problem
+        for alert in sorted(alerts, key=lambda a: a.threatPoints, reverse=True): # do not modify original list
+            c = min(sums, key=sums.get)
+            alert.difficulty = c
+            sums[c] += alert.threatPoints
             
     def makeOtherEvents(self):         
         """Create all events which are neither phase events nor alerts."""
@@ -787,6 +809,14 @@ def draw(dist):
     x = random.random() * cumDist[-1]
     return keys[bisect.bisect(cumDist,x)]
  
+
+def parseTime(string):
+    if ':' in string:
+        minutes, seconds = string.split(':')
+        return int(minutes) * 60 + int(seconds)
+    else:
+        return int(string)
+
 
 def round5(number):
     """Round down *number* to multiples of 5."""
@@ -901,54 +931,32 @@ class ThreatTuple:
         
     def asTuple(self):
        return tuple(self.counters[k] for k in THREAT_TYPES)
-       
 
-def drawEvents(events, length=None, width=80):
-    """Draw a visual representation of *events* in one line of *width* characters on the terminal.
-    *length* is the length of the mission. If it is not given, the endtime of the last event is used."""
-    if length is None:
-        length = events[-1].end
-    blockString = ''
-    for event in events:
-        startPos = event.start * width // length
-        endPos = max(startPos+1, event.end * width // length)
-        if startPos >= len(blockString):
-            blockString += " "*(startPos - len(blockString))
-            blockString += event.character
-            blockString += '#'*(endPos-startPos-1)
-        elif endPos > len(blockString):
-            blockString += event.character
-            blockString += '#'*(endPos-len(blockString)-1)
-        else: pass #print("Skipped {}".format(event)) # this event's visual representation would be contained in the previous event's one
-    print(blockString)
-    
     
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Generate missions for Vlaada Chvatil's Space Alert. In default mode this script will output a script for the Flash app at http://www.phipsisoftware.com/SpaceAlert.html")
+    parser = argparse.ArgumentParser(description="Generate missions for Vlaada Chvatil's Space Alert.")
     parser.add_argument('-n', "--number", help="Number of missions to generate for the statistics.", type=int, default=1000)
-    parser.add_argument("--log", help="Print log", action="store_true")
-    parser.add_argument("--draw", help="Draw timeline", action="store_true")
-    parser.add_argument('-w', "--width", help="Length of the timeline in characters.", type=int, default=80)
-    parser.add_argument("--script", help="Print script", action="store_true")
-    parser.add_argument('-a', "--all", help="Print log, draw timeline and print script.", action="store_true")
-    # Concerning the special combination nargs+const+default:  '-u 3' -> 3; '-u'   -> -1 (const); ''     -> 0 (default)
-    parser.add_argument("-u", "--unconfirmed", help="Special mode: Use unconfirmed reports for approximately half of the alerts (counting serious alerts twice). Use this to draw e.g. a white card for normal alerts and a yellow card for unconfirmed reports to get a mission of medium difficulty. Optionally you can specify a number to exactly determine the number of unconfirmed threat points.", nargs='?', const=-1, default=0, type=int)
     parser.add_argument("-p", "--players", help="Number of players. Only 4 or 5 players are supported.", type=int, choices=[4,5])
     parser.add_argument('--seed', help="Seed for the random number generator", type=int, default=None)
-    parser.add_argument('-d', "--double", help="Generate a mission for double actions.", action="store_true")
+    parser.add_argument('-2', "--double", help="Generate a mission for double actions.", action="store_true")
     parser.add_argument("--solo", help="Do not generate events which are ignored in solo play.", action="store_true")
     parser.add_argument('--alertCounters', help="Print an overview over the number of alerts of different types.", action="store_true")
     parser.add_argument('-o', "--option", help="Set the value of an arbitrary option using the format key=value.", type=str, action="append")
+    parser.add_argument('-d', '--difficulty', help="Set the difficulty.", type=str)
 
     args = parser.parse_args()
     if args.seed is not None:
         random.seed(args.seed)
     
+    if args.players is None:
+        print("No player count specified. I will assume five players.")
+        args.players = 5
+        
     if args.double:
-        options = Options.createDoubleActions(args.players, solo=args.solo, unconfirmed=args.unconfirmed)
-    else: options = Options.create(args.players, solo=args.solo, unconfirmed=args.unconfirmed)
-    if len(args.option):
+        options = Options.createDoubleActions(args.players, solo=args.solo, difficulty=args.difficulty)
+    else: options = Options.create(args.players, solo=args.solo, difficulty=args.difficulty)
+    if args.option is not None and len(args.option):
         overwrites = dict(keyEqValue.split('=') for keyEqValue in args.option)
         options.update(**overwrites)
             
@@ -958,15 +966,4 @@ if __name__ == "__main__":
     except RuntimeError as e:
         print("Error: {}".format(e))
     else:
-        if not any([args.log, args.draw, args.script]):
-            args.script = True
-        if args.all:
-            args.log = args.draw = args.script = True
-        if args.log:
-            print(mission.log())
-        if args.draw:
-            drawEvents(mission.events, width=args.width)
-        if args.script:
-            print(mission.script())
-        if args.alertCounters:
-            print(mission.alertCounters())
+        print(mission.log())

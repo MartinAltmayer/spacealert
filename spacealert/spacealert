@@ -1,0 +1,3 @@
+#!/bin/bash
+#python3 spacealert.py "$@" | xsel --clipboard
+python3 spacealert.py "$@"

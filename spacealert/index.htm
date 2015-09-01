@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style type="text/css">
+body {
+padding: 0px;
+margin: 0px;
+background-color: black;
+}
+
+#center {
+margin: 0 auto;
+width: 958px;
+height: 960px;
+position: relative;
+background-image: url("images/background.jpg");
+background-position: center top;
+background-repeat: no-repeat;
+}
+
+h1 {
+ font-size: 12pt;
+ font-family: "Sans";
+ padding: 0px;
+ margin: 0px;
+ color: #ab3314;
+}
+
+#randombox {
+position: absolute;
+top: 320px;
+left: 400px;
+}
+
+#scriptbox {
+position: absolute;
+top: 480px;
+left: 480px;
+}
+
+.box {
+border: 1px solid #191970;
+padding: 10px;
+background-color: rgba(25,25,112,0.45);
+}
+.box table, .box form {
+margin: 0px;
+padding: 0px;
+color: white;
+}
+.box table {
+margin-bottom: 5px;
+}
+.box td {
+vertical-align: top;
+}
+.box button {
+padding: 0px 25px;
+}
+</style>
+</head>
+<body>
+<div id="center">
+<div id="randombox" class="box">
+<h1>Play Random Mission</h1>
+<form action="player.htm" method="get">
+<table>
+<tr><td rowspan="2" style="padding-right: 40px;">
+<input type="radio" name="players" value="4" checked>4 Players</input><br />
+<input type="radio" name="players" value="5">5 Players</input>
+</td>
+<td>
+Difficulty:
+<select name="difficulty">
+<option value="w" style="background-color: White">White</option>
+<option value="wy"  style="background-color: Khaki">White/Yellow</option>
+<option value="y" style="background-color: Yellow">Yellow</option>
+<option value="wr" style="background-color: LightPink ">White/Red</option>
+<option value="wyr">Mixed</option>
+<option value="yr" style="background-color: Orange">Yellow/Red</option>
+<option value="r" style="background-color: Red">Red</option>
+</select>
+</td></tr>
+<tr><td style="padding-top: 5px;">
+<input type="checkbox" name="double">Double actions</input>
+</td>
+</tr>
+</table>
+<button type="submit" style="float:right" name="playrandom" value="1">Play Random</button>
+</form>
+</div>
+
+<div id="scriptbox" class="box">
+<h1>Play Scripted Mission</h1>
+<form action="player.htm" method="get">
+<table>
+<tr><td colspan="2">
+Choose script:
+<select name="script">
+<optgroup label="Missions">
+<option value="mission1">Mission 1</option>
+<option value="mission2">Mission 2</option>
+<option value="mission2">Mission 3</option>
+<option value="mission2">Mission 4</option>
+<option value="mission2">Mission 5</option>
+<option value="mission2">Mission 6</option>
+<option value="mission2">Mission 7</option>
+<option value="mission2">Mission 8</option>
+<option value="randommission">Random mission</option>
+</optgroup>
+<optgroup label="Training">
+<option value="firstTestRun">First test run</option>
+<option value="secondTestRun">Second test run</option>
+<option value="simulation1">Simulation 1</option>
+<option value="simulation2">Simulation 2</option>
+<option value="simulation3">Simulation 3</option>
+<option value="advancedSimulation1">Advanced Simulation 1</option>
+<option value="advancedSimulation2">Advanced Simulation 2</option>
+<option value="advancedSimulation3">Advanced Simulation 3</option>
+</optgroup>
+<!--<optgroup label="Double card missions">
+<option value="double1">Double card misison 1</option>
+<option value="double2">Double card misison 2</option>
+<option value="randomdouble">Random double card mission</option>
+</optgroup>-->
+</select>
+</td></tr>
+<tr><td rowspan="2" style="padding-right: 40px;">
+<input type="radio" name="players" checked>4 Players</input><br />
+<input type="radio" name="players" >5 Players</input>
+</td>
+<td>
+Difficulty:
+<select name="difficulty">
+<option value="w" style="background-color: White">White</option>
+<option value="y" style="background-color: Yellow">Yellow</option>
+<option value="r" style="background-color: Red">Red</option>
+</select>
+</td></tr>
+<tr><td style="padding-top: 10px;">
+</td>
+</tr>
+</table>
+<!--<button type="submit" style="float:left" name="createscript" value="1">Create Script</button>-->
+<button type="submit" style="float:right" name="playscript" value="1">Play Script</button>
+</form>
+</div>
+
+<button type="button" style="position:absolute; bottom: 100px; right: 20px;" onclick="location.href='/exit.htm'">Exit</button>
+</div>
+</body>
+</html>

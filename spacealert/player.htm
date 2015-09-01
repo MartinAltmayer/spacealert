@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Space Alert</title>
+<style type="text/css">
+html, body {
+  width:  100%;
+  height: 100%;
+  margin: 0px;
+  padding: 0px;
+}
+
+#endmenu {
+position: absolute;
+margin-left: auto;
+margin-right: auto;
+width: 150px;
+left: 0;
+right: 0;
+top: 280px;
+}
+
+#endmenu button {
+display: block;
+width: 150px;
+margin-top: 10px;
+margin-bottom: 10px;
+}
+
+#script button {
+width: 150px;
+margin-top: 10px;
+}
+
+#script {
+position: absolute;
+margin-left: auto;
+margin-right: auto;
+width: auto;
+left: 0;
+right: 0;
+top: 100px;
+text-align: center;
+background-color: black;
+}
+</style>
+
+<script type="text/javascript" src="player.js"></script>
+<script type="text/javascript">  
+/* BEGIN */
+var events = [
+
+
+new IncomingData(5),
+//new DataTransfer(10),
+
+// Test Alerts
+// new Alert(0,  1, false, "white", "white"),
+// new Alert(20, 2, false, "blue", "yellow"),
+// new Alert(40, 3, false, "red", "red"),
+// new Alert(60, 4, false, "internal", "white"),
+// new Alert(80, 5, true, "white", "yellow"),
+// new Alert(100, 6, true, "blue", "white"),
+// new Alert(120, 7, true, "red", "red"),
+// new Alert(140, 8, true, "internal", "yellow"),
+
+// Test Phase events
+//new PhaseEvent(0, 1, 0),
+//new PhaseEvent(10, 3, 5),
+//new PhaseEvent(10, 3, 5),
+
+];
+/* END */
+
+function handlePlayPauseButton(button) {
+    if (button.firstChild.nodeValue == "Pause")
+        animator.pause();
+    else animator.play();
+}
+
+function toggleScript() {
+    var script = document.getElementById('script');
+    var button = document.getElementById('scriptButton');
+    script.hidden = !script.hidden;
+    if (script.hidden)
+        button.firstChild.nodeValue = "Show script";
+    else button.firstChild.nodeValue = "Close script";
+}
+</script>  
+</head>
+<body style="background-color: black" onload="init();">
+
+<canvas width="100%" height="100%" id="canvas">  
+Sorry, but your browser doesn't seem to support the HTML5 canvas element.
+</canvas>
+
+<div id="menu" style="position: absolute; left: 0px; bottom: 0px; border-top: 2px ridge #cccccc; border-right: 2px ridge #cccccc; background-color: grey">
+<button onclick="animator.previous();">&lsaquo;&lsaquo; Previous</button>
+<button id="playPauseButton" onclick="handlePlayPauseButton(this);">Pause</button>
+<button onclick="animator.next();">Next &rsaquo;&rsaquo;</button>
+<button onclick="animator.stop();">Stop</button>
+<button onclick="toggleScript()" id="scriptButton">Show Script</button>
+</div>
+
+<script type="text/javascript">
+var audios = ["begin", "repeat", "noise", "alarm5",
+    "alert", "incoming_data", "data_transfer", "comm_down", "comm_restored", 
+    "time1", "time2", "time3", "time4", "time5", "time6", "time7", "time8",
+    "zone_red", "zone_white", "zone_blue",
+    "threat", "serious_threat", "internal_threat", "serious_internal",
+    "phase1_60", "phase1_20", "phase1_7",
+    "phase2_60", "phase2_20", "phase2_7",
+    "phase3_60", "phase3_20", "phase3_7",
+];
+for (var i=0; i<audios.length; i++) {
+    var track = audios[i];
+    document.write('<audio id="audio-'+track+'">');
+    document.write('<source src="audio/'+track+'.ogg" type="audio/ogg" preload="auto">');
+    document.write('<source src="audio/'+track+'.mp3" type="audio/mpeg" preload="auto">');
+    if (i==0)
+        document.write('Your browser does not support the audio tag.');
+    document.writeln('</audio>');
+}
+</script>
+
+<div id="endmenu" hidden>
+<button onclick="location.reload()">New Mission</button>
+<button onclick="animator.replay()">Replay</button>
+<button onclick="toggleScript()">Show Script</button>
+<button onclick="location.href='index.htm'">Menu</button>
+</div>
+
+<div id="script" hidden>
+<textarea rows="25" cols="60" autocomplete="off" id="textarea"></textarea><br />
+<button onclick="toggleScript()">Close</button>
+</div>
+</body>
+</html>

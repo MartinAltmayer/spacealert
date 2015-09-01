@@ -9,6 +9,9 @@ Features:
 - Supports mixed mission difficulties (e.g. white-yellow), see below.
 - Supports missions for double action cards (for the expansion).
 
+![Main menu](/menu.png)
+
+
 Usage
 -----
 1. Start the server with
@@ -21,6 +24,7 @@ if the default port 8000 is not ok.
 http://localhost:8000/index.htm
 and use the webpage to start either a randomly generated mission or a scripted mission from the game CD.
 
+3. To stop the server simply use Ctrl+C or the "Exit" button at the bottom of the main menu.
 
 Mission Difficulties
 --------------------
